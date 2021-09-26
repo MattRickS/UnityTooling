@@ -1,5 +1,5 @@
 using UnityEngine;
-using UnityEngine.SceneManagement;
+// using UnityEngine.SceneManagement;
 
 
 namespace GameServices
@@ -13,7 +13,8 @@ namespace GameServices
 
             ServiceLocator.Instance.Register<Inventory.InventoryService>(new Inventory.InventoryService());
 
-            SceneManager.LoadSceneAsync(1, LoadSceneMode.Additive);
+            // TODO: Whatever loading pattern is needed
+            // SceneManager.LoadSceneAsync(1, LoadSceneMode.Additive);
         }
     }
 }
