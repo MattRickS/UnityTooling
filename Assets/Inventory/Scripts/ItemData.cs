@@ -33,7 +33,7 @@ namespace Inventory
         // Sprite
         // Mesh?
         // Abilities (enum) list
-        public SerializableDictionary<Statistic, int> statistics;
+        public SerializableDictionary<Statistic, int> statistics = new SerializableDictionary<Statistic, int>();
 
         public string Id() { return $"{category}.{itemName}"; }
         public bool IsStackable() { return maxStackSize > 1; }

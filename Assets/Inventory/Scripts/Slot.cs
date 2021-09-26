@@ -7,7 +7,7 @@ namespace Inventory
     [Serializable]
     public class Slot
     {
-        public const string NO_ITEM = "EMPTY";
+        public const string NO_ITEM = "";
 
         public string itemID = NO_ITEM;
         public int quantity = 0;

@@ -13,10 +13,11 @@ namespace Inventory
     [Serializable]
     public class ItemDelta
     {
-        public string itemID;
         public string deltaID = System.Guid.NewGuid().ToString();
-        public SerializableDictionary<Statistic, int> statistics;
+        public string itemID;
+        public SerializableDictionary<Statistic, int> statistics = new SerializableDictionary<Statistic, int>();
 
+        public ItemDelta(string itemID) { this.itemID = itemID; }
         public string Id() { return deltaID; }
 
         public int GetStat(Statistic stat)
@@ -27,6 +28,10 @@ namespace Inventory
                 return value;
             }
             return 0;
+        }
+        public void SetStat(Statistic stat, int value)
+        {
+            statistics[stat] = value;
         }
     }
 }

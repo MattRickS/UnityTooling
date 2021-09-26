@@ -5,16 +5,24 @@ using UnityEngine;
 
 namespace Inventory
 {
-    // ScriptableObject won't store runtime build data - Service must save to JSON
-    // TODO: Is it better for this to not be a ScriptableObject?
-    [CreateAssetMenu(fileName = "Data", menuName = "Inventory/Inventory", order = 3)]
-    public class Inventory : ScriptableObject
+    // Would like to be able to create instances of an Inventory for various assets
+    //   These wouldn't live in the Service then. How to pre-populate deltas though?
+    // [CreateAssetMenu(fileName = "Data", menuName = "Inventory/Inventory", order = 3)]
+    [Serializable]
+    public class Inventory // : ScriptableObject
     {
         public string inventoryID = System.Guid.NewGuid().ToString();
 
         [SerializeField] List<Slot> slots;
 
-        public Inventory(int size) { slots = new List<Slot>(size); }
+        public Inventory(int size)
+        {
+            slots = new List<Slot>(size);
+            for (int i = 0; i < size; i++)
+            {
+                slots.Add(new Slot());
+            }
+        }
 
         public string Id() { return inventoryID; }
 

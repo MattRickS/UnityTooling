@@ -4,6 +4,12 @@ using UnityEngine;
 
 public static class FileManager
 {
+    public static bool FileExists(string fileName)
+    {
+        var fullPath = Path.Combine(Application.persistentDataPath, fileName);
+        return File.Exists(fullPath);
+    }
+
     public static bool WriteFile(string fileName, string contents)
     {
         var fullPath = Path.Combine(Application.persistentDataPath, fileName);
@@ -11,6 +17,7 @@ public static class FileManager
         try
         {
             File.WriteAllText(fullPath, contents);
+            Debug.Log($"Written to {fullPath}");
             return true;
         }
         catch (Exception e)
@@ -27,6 +34,7 @@ public static class FileManager
         try
         {
             result = File.ReadAllText(fullPath);
+            Debug.Log($"Read from {fullPath}");
             return true;
         }
         catch (Exception e)
