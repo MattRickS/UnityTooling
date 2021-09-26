@@ -5,12 +5,18 @@ using UnityEngine;
 
 namespace Inventory
 {
+    // ScriptableObject won't store runtime build data - Service must save to JSON
+    // TODO: Is it better for this to not be a ScriptableObject?
     [CreateAssetMenu(fileName = "Data", menuName = "Inventory/Inventory", order = 3)]
     public class Inventory : ScriptableObject
     {
+        public string inventoryID = System.Guid.NewGuid().ToString();
+
         [SerializeField] List<Slot> slots;
 
         public Inventory(int size) { slots = new List<Slot>(size); }
+
+        public string Id() { return inventoryID; }
 
         public ItemData GetItemData(int index)
         {
@@ -31,6 +37,19 @@ namespace Inventory
         public bool HasItem(int index, string itemID) { return slots[index].itemID == itemID; }
 
         // Statistics
+        public int SlotStatistic(int index, Statistic stat)
+        {
+            if (IsEmpty(index)) { return 0; }
+
+            Slot slot = slots[index];
+            InventoryService service = GameServices.ServiceLocator.Instance.Get<InventoryService>();
+            int value = service.GetItemStatistic(slot.itemID, stat) * slot.quantity;
+            foreach (string instanceID in slot.instanceIDs)
+            {
+                value += service.GetItemStatistic(instanceID, stat);
+            }
+            return value;
+        }
         public int AggregateStatistic(Statistic stat)
         {
             int value = 0;
@@ -39,7 +58,7 @@ namespace Inventory
                 if (IsEmpty(currIndex)) { continue; }
 
                 ItemData itemData = GetItemData(currIndex);
-                value += GetItemData(currIndex).GetStat(stat);
+                value += SlotStatistic(currIndex, stat);
             }
             return value;
         }
@@ -48,18 +67,16 @@ namespace Inventory
             Dictionary<Statistic, int> aggregates = new Dictionary<Statistic, int>();
             foreach (Statistic stat in stats)
             {
-                aggregates[stat] = 0;
+                aggregates.Add(stat, 0);
             }
 
             for (int currIndex = 0; currIndex < NumSlots(); currIndex++)
             {
                 if (IsEmpty(currIndex)) { continue; }
 
-                ItemData itemData = GetItemData(currIndex);
                 foreach (Statistic stat in stats)
                 {
-                    // Get Delta and combine with stat
-                    aggregates[stat] += itemData.GetStat(stat);
+                    aggregates[stat] += SlotStatistic(currIndex, stat);
                 }
             }
             return aggregates;
