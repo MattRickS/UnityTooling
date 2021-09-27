@@ -8,6 +8,7 @@ namespace Inventory
     [Serializable]
     public class InventoryService : GameServices.IGameService, ISerializationCallbackReceiver
     {
+        public string saveName = "InventoryService";
         public Catalog catalog;
         public List<ItemDelta> deltas = new List<ItemDelta>();
         public List<Inventory> inventories = new List<Inventory>();
@@ -68,18 +69,26 @@ namespace Inventory
         public Inventory GetInventory(string inventoryID) { return inventoryMapping[inventoryID]; }
 
         // Serialization
-        public void Save(string fileName)
+        public bool Save()
         {
             // TODO: This will save the catalog into the JSON? Uneeded though.
             //       Could remove from the before serialisation?
             string json = JsonUtility.ToJson(this);
-            FileManager.WriteFile(fileName, json);
+            return SaveManager.SaveJSON(saveName, json);
         }
-        public void Load(string fileName)
+        public bool Load()
         {
+            if (!SaveManager.SaveExists(saveName))
+            {
+                return false;
+            }
             string json;
-            FileManager.ReadFile(fileName, out json);
+            if (!SaveManager.LoadJSON(saveName, out json))
+            {
+                return false;
+            }
             JsonUtility.FromJsonOverwrite(json, this);
+            return true;
         }
 
         public void OnBeforeSerialize() { }

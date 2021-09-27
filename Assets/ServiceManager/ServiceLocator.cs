@@ -48,5 +48,11 @@ namespace GameServices
             }
             services.Remove(key);
         }
+
+        public IEnumerable<IGameService> Services()
+        {
+            foreach (IGameService service in services.Values)
+                yield return service;
+        }
     }
 }

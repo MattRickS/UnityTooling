@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 
 
@@ -45,6 +46,15 @@ namespace Inventory
                 return value;
             }
             return 0;
+        }
+        public List<Statistic> ListStats()
+        {
+            List<Statistic> stats = new List<Statistic>();
+            foreach (Statistic stat in statistics.Keys)
+            {
+                stats.Add(stat);
+            }
+            return stats;
         }
     }
 
