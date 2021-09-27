@@ -12,4 +12,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 65b22e157cc65604aa6221d7b875fbed, type: 3}
   m_Name: MasterCatalog
   m_EditorClassIdentifier: 
-  items: []
+  items:
+  - {fileID: 11400000, guid: f7a17111af97b244ab3baf3772318f1c, type: 2}
+  - {fileID: 11400000, guid: 4040749704faed34caa4dff411a2cfdd, type: 2}
+  - {fileID: 11400000, guid: ae67f2127ba49514898c1fc46cdd23ef, type: 2}
+  - {fileID: 11400000, guid: bc274deda66ab0d4e9dc061f550383f4, type: 2}

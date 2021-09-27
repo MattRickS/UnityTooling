@@ -12,10 +12,14 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ea0717e6ec043a241882d361ccb3a718, type: 3}
   m_Name: Sword
   m_EditorClassIdentifier: 
-  itemName: 
-  category: 0
-  description: 
+  itemName: Sword
+  category: 1
+  description: Pointy
   maxStackSize: 1
   isConsumable: 0
   statistics:
-    list: []
+    list:
+    - Key: 0
+      Value: 100
+    - Key: 2
+      Value: 2

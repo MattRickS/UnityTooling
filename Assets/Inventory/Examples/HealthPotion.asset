@@ -12,10 +12,14 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ea0717e6ec043a241882d361ccb3a718, type: 3}
   m_Name: HealthPotion
   m_EditorClassIdentifier: 
-  itemName: 
-  category: 0
-  description: 
-  maxStackSize: 1
-  isConsumable: 0
+  itemName: HealthPotion
+  category: 2
+  description: Restores Health
+  maxStackSize: 10
+  isConsumable: 1
   statistics:
-    list: []
+    list:
+    - Key: 0
+      Value: 10
+    - Key: 4
+      Value: 20
