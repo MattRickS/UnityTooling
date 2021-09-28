@@ -149,7 +149,6 @@ namespace Inventory
             }
             return quantity - remaining;
         }
-
         /*
         Removes up to `quantity` occurrences of the item as possible starting
         from the back of the Inventory. Returns the quantity that was removed
@@ -196,11 +195,11 @@ namespace Inventory
             return quantity - remaining;
         }
         /*
-        Removes the requested item(s) and returns them as a list of IDs.
+        Removes the requested number of item and returns them as a list of IDs.
         IDs may or may not be modified, and duplicate IDs are returned for
         multiple non-modified items.
         */
-        public List<string> TakeItem(string itemID, int quantity = 1)
+        public List<string> TakeItems(string itemID, int quantity)
         {
             List<string> takenIDs = new List<string>();
 
@@ -241,6 +240,21 @@ namespace Inventory
                 }
             }
             return takenIDs;
+        }
+        /*
+        Removes the requested item and outputs the itemID which may be modified.
+        Returns bool for whether the item was found or not.
+        */
+        public bool TakeItem(string itemID, out string takenItemID)
+        {
+            List<string> taken = TakeItems(itemID, 1);
+            if (taken.Count > 0)
+            {
+                takenItemID = taken[0];
+                return true;
+            }
+            takenItemID = "";
+            return false;
         }
     }
 }
