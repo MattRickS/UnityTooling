@@ -14,7 +14,7 @@ namespace Inventory
 
         public int Count() { return items.Count; }
 
-        public ItemData GetItem(string id)
+        public ItemData GetItemData(string id)
         {
             ItemData data;
             if (itemMapping.TryGetValue(id, out data))
@@ -28,6 +28,13 @@ namespace Inventory
         public void OnAfterDeserialize()
         {
             itemMapping = new Dictionary<string, ItemData>();
+            // TODO:
+            // Something weird is happening here - we're seeing errors for duplicate
+            // names, but each name is using the default values, ie, "Armour.".
+            // It's triggered by the existing MasterCatalog, so presumably it's
+            // deserializing multiple times, once without data. The Count is correct
+            // however, so perhaps it's initialising once with empty data and
+            // then populating after?
             foreach (ItemData item in items)
             {
                 itemMapping.Add(item.Id(), item);

@@ -10,10 +10,10 @@ namespace Inventory
     {
         public string saveName = "InventoryService";
         public Catalog catalog;
-        public List<ItemDelta> deltas = new List<ItemDelta>();
+        public List<ModifiedItem> modifiedItems = new List<ModifiedItem>();
         public List<Inventory> inventories = new List<Inventory>();
 
-        private Dictionary<string, ItemDelta> deltaMapping = new Dictionary<string, ItemDelta>();
+        private Dictionary<string, ModifiedItem> modifiedItemMapping = new Dictionary<string, ModifiedItem>();
         private Dictionary<string, Inventory> inventoryMapping = new Dictionary<string, Inventory>();
 
         public InventoryService() { }
@@ -21,42 +21,47 @@ namespace Inventory
 
         // Item Data
         /*
-        Retrieves the ItemData for a given ID, which may be an itemID or deltaID
+        Retrieves the ItemData for a given ID, which may be an itemID or modifiedItemID
         */
         public ItemData GetItemData(string id)
         {
-            ItemDelta delta;
-            if (deltaMapping.TryGetValue(id, out delta))
+            ModifiedItem modifiedItem;
+            if (modifiedItemMapping.TryGetValue(id, out modifiedItem))
             {
-                id = delta.itemID;
+                id = modifiedItem.itemID;
             }
-            return catalog.GetItem(id);
+            return catalog.GetItemData(id);
         }
         /*
-        Retrieves the statistic value for the ID. If the ID belongs to a delta,
+        Retrieves the statistic value for the ID. If the ID belongs to a modified item,
         it combines the data and delta value.
         */
         public int GetItemStatistic(string id, Statistic stat)
         {
-            ItemDelta delta;
+            ModifiedItem modItem;
             int value = 0;
-            if (deltaMapping.TryGetValue(id, out delta))
+            if (modifiedItemMapping.TryGetValue(id, out modItem))
             {
-                id = delta.itemID;
-                value += delta.GetStat(stat);
+                id = modItem.itemID;
+                value += modItem.GetStatDelta(stat);
             }
             ItemData data = GetItemData(id);
             value += data.GetStat(stat);
             return value;
         }
-        public ItemDelta CreateDelta(string itemID)
+        // TODO: Don't return the item, just the ID. Expose a method for modifying stats.
+        /*
+        Creates a new modified item instance to be tracked by the inventory.
+        The returned ModifiedItem has no stat deltas when returned.
+        */
+        public ModifiedItem CreateModifiedItem(string itemID)
         {
-            ItemDelta delta = new ItemDelta(itemID);
-            deltas.Add(delta);
-            deltaMapping.Add(delta.Id(), delta);
-            return delta;
+            ModifiedItem modifiedItem = new ModifiedItem(itemID);
+            modifiedItems.Add(modifiedItem);
+            modifiedItemMapping.Add(modifiedItem.Id(), modifiedItem);
+            return modifiedItem;
         }
-        public bool HasDelta(string id) { return deltaMapping.ContainsKey(id); }
+        public bool IsModifiedItemID(string id) { return modifiedItemMapping.ContainsKey(id); }
 
         // Inventories
         public Inventory CreateInventory(int size)
@@ -94,10 +99,10 @@ namespace Inventory
         public void OnBeforeSerialize() { }
         public void OnAfterDeserialize()
         {
-            deltaMapping = new Dictionary<string, ItemDelta>();
-            foreach (ItemDelta delta in deltas)
+            modifiedItemMapping = new Dictionary<string, ModifiedItem>();
+            foreach (ModifiedItem modifiedItem in modifiedItems)
             {
-                deltaMapping.Add(delta.Id(), delta);
+                modifiedItemMapping.Add(modifiedItem.Id(), modifiedItem);
             }
 
             inventoryMapping = new Dictionary<string, Inventory>();

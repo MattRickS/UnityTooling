@@ -5,11 +5,13 @@ using UnityEngine;
 
 namespace Inventory
 {
-    // Would like to be able to create instances of an Inventory for various assets
-    //   These wouldn't live in the Service then. How to pre-populate deltas though?
-    // [CreateAssetMenu(fileName = "Data", menuName = "Inventory/Inventory", order = 3)]
+    /*
+    Inventories are not ScriptableObjects as they are stateful and must be
+    tracked by the InventoryService. They can be prepopulated on the service or
+    loaded from configuration.
+    */
     [Serializable]
-    public class Inventory // : ScriptableObject
+    public class Inventory
     {
         public string inventoryID = System.Guid.NewGuid().ToString();
 
