@@ -5,6 +5,14 @@ using UnityEngine;
 
 namespace Inventory
 {
+    /*
+    Interface for managing items and inventories.
+
+    ItemData and Catalogs are static data that can be freely referenced and shared.
+    ModifiedItems and Inventories are stateful, so are tracked by the InventoryService
+    and referenced via IDs. This ensures the (de)serialization is centralised to avoid
+    data becoming duplicated.
+    */
     [Serializable]
     public class InventoryService : GameServices.IGameService, ISerializationCallbackReceiver
     {
@@ -18,6 +26,14 @@ namespace Inventory
 
         public InventoryService() { }
         public InventoryService(Catalog catalog) { this.catalog = catalog; }
+
+        private ModifiedItem CreateModifiedItem(string itemID)
+        {
+            ModifiedItem modifiedItem = new ModifiedItem(itemID);
+            modifiedItems.Add(modifiedItem);
+            modifiedItemMapping.Add(modifiedItem.Id(), modifiedItem);
+            return modifiedItem;
+        }
 
         // Item Data
         /*
@@ -36,7 +52,7 @@ namespace Inventory
         Retrieves the statistic value for the ID. If the ID belongs to a modified item,
         it combines the data and delta value.
         */
-        public int GetItemStatistic(string id, Statistic stat)
+        public int GetItemStatisticValue(string id, Statistic stat)
         {
             ModifiedItem modItem;
             int value = 0;
@@ -49,17 +65,41 @@ namespace Inventory
             value += data.GetStat(stat);
             return value;
         }
-        // TODO: Don't return the item, just the ID. Expose a method for modifying stats.
+        /*
+        Retrieves the statistic's modified value for the ID. Defaults to 0.
+        */
+        public int GetItemStatisticDeltaValue(string id, Statistic stat)
+        {
+            ModifiedItem modItem;
+            if (modifiedItemMapping.TryGetValue(id, out modItem))
+            {
+                id = modItem.itemID;
+                return modItem.GetStatDelta(stat);
+            }
+            return 0;
+        }
+
         /*
         Creates a new modified item instance to be tracked by the inventory.
         The returned ModifiedItem has no stat deltas when returned.
         */
-        public ModifiedItem CreateModifiedItem(string itemID)
+        public string CreateModifiedItemID(string itemID)
         {
-            ModifiedItem modifiedItem = new ModifiedItem(itemID);
-            modifiedItems.Add(modifiedItem);
-            modifiedItemMapping.Add(modifiedItem.Id(), modifiedItem);
-            return modifiedItem;
+            return CreateModifiedItem(itemID).Id();
+        }
+        /*
+        Modifies the delta for an itemID. If the given itemID was not currently a
+        tracked instance, a new instance is created and the ID returned.
+        */
+        public string ModifyItemDelta(string itemID, Statistic statistic, int value)
+        {
+            ModifiedItem modItem;
+            if (!modifiedItemMapping.TryGetValue(itemID, out modItem))
+            {
+                modItem = CreateModifiedItem(itemID);
+            }
+            modItem.SetStatDelta(statistic, value);
+            return modItem.Id();
         }
         public bool IsModifiedItemID(string id) { return modifiedItemMapping.ContainsKey(id); }
 

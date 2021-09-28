@@ -37,7 +37,7 @@ namespace Inventory
         public int NumSlots() { return slots.Count; }
 
         // Stacking
-        public int StackSize(int index) { return slots[index].quantity + slots[index].instanceIDs.Count; }
+        public int StackSize(int index) { return slots[index].quantity; }
         public int MaxStackSize(int index) { return GetItemData(index).maxStackSize; }
         public bool IsStackable(int index) { return MaxStackSize(index) > 1; }
 
@@ -53,10 +53,10 @@ namespace Inventory
 
             Slot slot = slots[index];
             InventoryService service = GameServices.ServiceLocator.Instance.Get<InventoryService>();
-            int value = service.GetItemStatistic(slot.itemID, stat) * slot.quantity;
+            int value = service.GetItemStatisticValue(slot.itemID, stat) * (slot.quantity - slot.instanceIDs.Count);
             foreach (string instanceID in slot.instanceIDs)
             {
-                value += service.GetItemStatistic(instanceID, stat);
+                value += service.GetItemStatisticValue(instanceID, stat);
             }
             return value;
         }
@@ -101,24 +101,48 @@ namespace Inventory
         public int AddItem(string itemID, int quantity = 1)
         {
             InventoryService service = GameServices.ServiceLocator.Instance.Get<InventoryService>();
+
+            // Check if adding a modified item and determine the ItemData ID
+            bool isModifiedItem = service.IsModifiedItemID(itemID);
+            string itemDataID = itemID;
+            if (isModifiedItem)
+            {
+                if (quantity > 1)
+                {
+                    throw new Exception($"Cannot add multiples ({quantity}) of modifiedItems");
+                }
+                itemDataID = service.GetItemData(itemID).Id();
+            }
+
+            // TODO: Populate stacks first
             int remaining = quantity;
             int maxStackSize = service.GetItemData(itemID).maxStackSize;
+            Slot slot;
+            int n;
             for (int currIndex = 0; currIndex < NumSlots(); currIndex++)
             {
                 if (IsEmpty(currIndex))
                 {
-                    int n = Math.Min(quantity, maxStackSize);
-                    Slot slot = slots[currIndex];
-                    slot.itemID = itemID;
-                    // TODO: if modified
+                    n = Math.Min(quantity, maxStackSize);
+                    slot = slots[currIndex];
+                    slot.itemID = itemDataID;
                     slot.quantity = n;
                     remaining -= n;
+                    if (isModifiedItem)
+                    {
+                        slot.instanceIDs.Add(itemID);
+                    }
                 }
                 else if (HasItem(currIndex, itemID) && !IsFull(currIndex))
                 {
-                    int n = Math.Min(quantity, maxStackSize - StackSize(currIndex));
-                    slots[currIndex].quantity += n;
+                    n = Math.Min(quantity, maxStackSize - StackSize(currIndex));
+                    slot = slots[currIndex];
+                    slot.quantity += n;
                     remaining -= n;
+                    if (isModifiedItem)
+                    {
+                        slot.instanceIDs.Add(itemID);
+                    }
                 }
 
                 if (remaining == 0) { break; }
@@ -133,17 +157,80 @@ namespace Inventory
         */
         public int RemoveItem(string itemID, int quantity = 1)
         {
+            InventoryService service = GameServices.ServiceLocator.Instance.Get<InventoryService>();
+
+            // Check if adding a modified item and determine the ItemData ID
+            if (service.IsModifiedItemID(itemID))
+            {
+                itemID = service.GetItemData(itemID).Id();
+            }
+
             int remaining = quantity;
+            Slot slot;
+            int n;
             for (int currIndex = NumSlots() - 1; currIndex >= 0; currIndex--)
             {
                 if (IsEmpty(currIndex) || !HasItem(currIndex, itemID))
                 {
                     continue;
                 }
-                int n = Math.Min(remaining, StackSize(currIndex));
-                Slot slot = slots[currIndex];
+                n = Math.Min(remaining, StackSize(currIndex));
+                slot = slots[currIndex];
                 slot.itemID = itemID;
-                // TODO: remove delta IDs (optional?)
+                slot.quantity -= n;
+                remaining -= n;
+
+                // Modified instances are assumed to be top of the stack
+                if (slot.instanceIDs.Count > 0)
+                {
+                    int numRemoveInstances = Math.Min(slot.instanceIDs.Count, n);
+                    slot.instanceIDs.RemoveRange(slot.instanceIDs.Count - n, n);
+                }
+
+                if (remaining == 0)
+                {
+                    slot.itemID = Slot.NO_ITEM;
+                    break;
+                }
+            }
+            return quantity - remaining;
+        }
+        /*
+        Removes the requested item(s) and returns them as a list of IDs.
+        IDs may or may not be modified, and duplicate IDs are returned for
+        multiple non-modified items.
+        */
+        public List<string> TakeItem(string itemID, int quantity = 1)
+        {
+            List<string> takenIDs = new List<string>();
+
+            int remaining = quantity;
+            Slot slot;
+            int n;
+            for (int currIndex = NumSlots() - 1; currIndex >= 0; currIndex--)
+            {
+                if (IsEmpty(currIndex) || !HasItem(currIndex, itemID))
+                {
+                    continue;
+                }
+                n = Math.Min(remaining, StackSize(currIndex));
+                slot = slots[currIndex];
+                slot.itemID = itemID;
+
+                for (int i = 0; i < n; i++)
+                {
+                    // Modified instances are assumed to be top of the stack
+                    if (slot.instanceIDs.Count > 0)
+                    {
+                        takenIDs.Add(slot.instanceIDs[slot.instanceIDs.Count - 1]);
+                        slot.instanceIDs.RemoveAt(slot.instanceIDs.Count - 1);
+                    }
+                    else
+                    {
+                        takenIDs.Add(slot.itemID);
+                    }
+                }
+
                 slot.quantity -= n;
                 remaining -= n;
 
@@ -153,7 +240,7 @@ namespace Inventory
                     break;
                 }
             }
-            return quantity - remaining;
+            return takenIDs;
         }
     }
 }
