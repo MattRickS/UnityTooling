@@ -6,13 +6,13 @@ using UnityEngine.TestTools;
 
 using Inventory;
 
-public class InventoryTest
+public class CatalogTest
 {
     private ItemData item_shield;
     private ItemData item_sword;
     private Catalog catalog;
 
-    ItemData CreateItemData(
+    private ItemData CreateItemData(
         string name,
         Category category,
         string description,
@@ -67,9 +67,22 @@ public class InventoryTest
     }
 
     [Test]
-    public void InventoryTestSimplePasses()
+    public void GetItemData_ValidID_FindsItem()
     {
         ItemData item = catalog.GetItemData("Armour.shield");
         Assert.That(item, Is.EqualTo(item_shield));
+
+        item = catalog.GetItemData("Weapon.sword");
+        Assert.That(item, Is.EqualTo(item_sword));
+    }
+
+    [TestCase("Weapon.shield")]
+    [TestCase("Armour.sword")]
+    [TestCase("Jibberish")]
+    [TestCase("")]
+    public void GetItemData_InvalidID_ReturnsNull(string name)
+    {
+        ItemData result = catalog.GetItemData(name);
+        Assert.That(result, Is.Null);
     }
 }
