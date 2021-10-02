@@ -15,7 +15,7 @@ namespace Inventory
     [Serializable]
     public class ModifiedItem
     {
-        public string modifiedItemID = System.Guid.NewGuid().ToString();
+        public string modifiedItemID;
         public string itemID;
         public SerializableDictionary<Statistic, int> statistics = new SerializableDictionary<Statistic, int>();
 

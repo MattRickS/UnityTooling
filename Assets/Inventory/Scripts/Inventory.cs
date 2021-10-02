@@ -17,11 +17,11 @@ namespace Inventory
         // ensures all inventories use a shared instance. Should look at making this
         // private and see if there are better serialization options.
         private ItemManager itemManager;
+        [SerializeField] private List<Slot> slots;
+
+        private ItemData GetItemData(int index) { return itemManager.GetItemData(slots[index].itemID); }
+
         public string inventoryID = System.Guid.NewGuid().ToString();
-
-        public void SetItemManager(ItemManager itemManager) { this.itemManager = itemManager; }
-
-        [SerializeField] List<Slot> slots;
 
         public Inventory(ItemManager itemManager, int size)
         {
@@ -32,11 +32,9 @@ namespace Inventory
                 slots.Add(new Slot());
             }
         }
+        public void SetItemManager(ItemManager itemManager) { this.itemManager = itemManager; }
 
         public string Id() { return inventoryID; }
-
-        public ItemData GetItemData(int index) { return itemManager.GetItemData(slots[index].itemID); }
-
         public int NumSlots() { return slots.Count; }
 
         // Stacking

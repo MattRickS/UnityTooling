@@ -4,7 +4,8 @@ using UnityEngine;
 
 using Inventory;
 
-public class CatalogTest
+
+public class ItemManagerTest
 {
     private ItemData item_shield;
     private ItemData item_sword;
@@ -39,23 +40,23 @@ public class CatalogTest
         Object.DestroyImmediate(catalog);
     }
 
-    [Test]
-    public void GetItemData_ValidID_FindsItem()
+    [TestCase("Armour.shield", ExpectedResult = true)]
+    [TestCase("Weapon.sword", ExpectedResult = true)]
+    public bool CreateModifiedItemID_ValidID_Success(string name)
     {
-        ItemData item = catalog.GetItemData("Armour.shield");
-        Assert.That(item, Is.EqualTo(item_shield));
-
-        item = catalog.GetItemData("Weapon.sword");
-        Assert.That(item, Is.EqualTo(item_sword));
+        ItemManager itemManager = new ItemManager(catalog);
+        string itemID = itemManager.CreateModifiedItemID(name);
+        Assert.That(itemID, Does.StartWith($"{name}."));
+        return itemManager.IsValidID(itemID);
     }
 
-    [TestCase("Weapon.shield")]
     [TestCase("Armour.sword")]
+    [TestCase("Weapon.shield")]
     [TestCase("Jibberish")]
     [TestCase("")]
-    public void GetItemData_InvalidID_ReturnsNull(string name)
+    public void CreateModifiedItemID_InvalidID_Throws(string name)
     {
-        ItemData result = catalog.GetItemData(name);
-        Assert.That(result, Is.Null);
+        ItemManager itemManager = new ItemManager(catalog);
+        Assert.That(() => { itemManager.CreateModifiedItemID(name); }, Throws.TypeOf<KeyNotFoundException>());
     }
 }

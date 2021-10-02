@@ -24,6 +24,9 @@ namespace Inventory
             return catalog;
         }
 
+        public int NumItems() { return items.Count; }
+        public bool IsValidID(string id) { return itemMapping.ContainsKey(id); }
+
         public ItemData GetItemData(string id)
         {
             ItemData data;

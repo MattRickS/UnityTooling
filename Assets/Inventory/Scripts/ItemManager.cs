@@ -24,12 +24,24 @@ namespace Inventory
         public ItemManager() { }
         public ItemManager(Catalog catalog) { this.catalog = catalog; }
 
+        private void ValidateID(string itemID)
+        {
+            if (!IsValidID(itemID)) { throw new KeyNotFoundException(itemID); }
+        }
         private ModifiedItem CreateModifiedItem(string itemID)
         {
+            ValidateID(itemID);
             ModifiedItem modifiedItem = new ModifiedItem(itemID);
             modifiedItems.Add(modifiedItem);
             modifiedItemMapping.Add(modifiedItem.Id(), modifiedItem);
             return modifiedItem;
+        }
+
+        public int NumModifiedIDs() { return modifiedItems.Count; }
+        public int NumStaticItems() { return catalog.NumItems(); }
+        public bool IsValidID(string id)
+        {
+            return catalog.IsValidID(id) || modifiedItemMapping.ContainsKey(id);
         }
 
         // Item Data
