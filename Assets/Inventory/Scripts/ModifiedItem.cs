@@ -25,6 +25,12 @@ namespace Inventory
             // For debugging purposes, use a unique readable ID
             this.modifiedItemID = $"{this.itemID}.{System.Guid.NewGuid().ToString()}";
         }
+        // Should not be called without validating the ID is unique
+        public ModifiedItem(string itemID, string newItemID)
+        {
+            this.itemID = itemID;
+            this.modifiedItemID = newItemID;
+        }
         public string Id() { return modifiedItemID; }
 
         public int GetStatDelta(Statistic stat)

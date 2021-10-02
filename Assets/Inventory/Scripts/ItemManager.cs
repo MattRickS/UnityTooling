@@ -28,10 +28,20 @@ namespace Inventory
         {
             if (!IsValidID(itemID)) { throw new KeyNotFoundException(itemID); }
         }
-        private ModifiedItem CreateModifiedItem(string itemID)
+        private ModifiedItem CreateModifiedItem(string itemID, string newItemID = null)
         {
             ValidateID(itemID);
-            ModifiedItem modifiedItem = new ModifiedItem(itemID);
+            ModifiedItem modifiedItem;
+            if (string.IsNullOrEmpty(newItemID))
+            {
+                modifiedItem = new ModifiedItem(itemID);
+            }
+            else
+            {
+                // If the ID is already in use, throw an error
+                if (IsValidID(newItemID)) { throw new SystemException(); }
+                modifiedItem = new ModifiedItem(itemID, newItemID);
+            }
             modifiedItems.Add(modifiedItem);
             modifiedItemMapping.Add(modifiedItem.Id(), modifiedItem);
             return modifiedItem;
@@ -41,8 +51,10 @@ namespace Inventory
         public int NumStaticItems() { return catalog.NumItems(); }
         public bool IsValidID(string id)
         {
-            return catalog.IsValidID(id) || modifiedItemMapping.ContainsKey(id);
+            return IsStaticItemID(id) || IsModifiedItemID(id);
         }
+        public bool IsModifiedItemID(string id) { return !string.IsNullOrEmpty(id) && modifiedItemMapping.ContainsKey(id); }
+        public bool IsStaticItemID(string id) { return catalog.IsValidID(id); }
 
         // Item Data
         /*
@@ -92,9 +104,9 @@ namespace Inventory
         Creates a new modified item instance to be tracked by the inventory.
         The returned ModifiedItem has no stat deltas when returned.
         */
-        public string CreateModifiedItemID(string itemID)
+        public string CreateModifiedItemID(string itemID, string newItemID = null)
         {
-            return CreateModifiedItem(itemID).Id();
+            return CreateModifiedItem(itemID, newItemID).Id();
         }
         /*
         Modifies the delta for an itemID. If the given itemID was not currently a
@@ -110,7 +122,6 @@ namespace Inventory
             modItem.SetStatDelta(statistic, value);
             return modItem.Id();
         }
-        public bool IsModifiedItemID(string id) { return modifiedItemMapping.ContainsKey(id); }
 
         // Serialization
         public void OnBeforeSerialize() { }

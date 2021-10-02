@@ -25,7 +25,10 @@ namespace Inventory
         }
 
         public int NumItems() { return items.Count; }
-        public bool IsValidID(string id) { return itemMapping.ContainsKey(id); }
+        public bool IsValidID(string id)
+        {
+            return !string.IsNullOrEmpty(id) && itemMapping.ContainsKey(id);
+        }
 
         public ItemData GetItemData(string id)
         {
