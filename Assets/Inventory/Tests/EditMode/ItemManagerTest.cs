@@ -13,9 +13,9 @@ public class ItemManagerTest
     private ItemManager sharedItemManager;
     private static string shieldItemID = "Armour.shield";
     private static string swordItemID = "Weapon.sword";
-    private static string modifiedItemID = "MyCustomItemID";
+    private static string modifiedSwordItemID = "MyCustomItemID";
 
-    public static IEnumerable<string> validItemIDProvider()
+    public static IEnumerable<string> validStaticItemIDProvider()
     {
         yield return shieldItemID;
         yield return swordItemID;
@@ -25,7 +25,7 @@ public class ItemManagerTest
     {
         yield return shieldItemID;
         yield return swordItemID;
-        yield return modifiedItemID;
+        yield return modifiedSwordItemID;
     }
 
     public static IEnumerable<string> invalidItemIDProvider()
@@ -55,7 +55,7 @@ public class ItemManagerTest
             new List<ItemData>() { item_shield, item_sword }
         );
         sharedItemManager = new ItemManager(catalog);
-        sharedItemManager.CreateModifiedItemID(swordItemID, modifiedItemID);
+        sharedItemManager.CreateModifiedItemID(swordItemID, modifiedSwordItemID);
         // Can use this to load from an existing instance
         // catalog = (Catalog)AssetDatabase.LoadAssetAtPath( pathToTestCatalog, typeof(Catalog) );
     }
@@ -68,14 +68,21 @@ public class ItemManagerTest
         Object.DestroyImmediate(catalog);
     }
 
-    [Test, TestCaseSource("validItemIDProvider")]
+    // =========================================================================
+    // Tests
+
+    [Test, TestCaseSource("validStaticItemIDProvider")]
     public void CreateModifiedItemID_ValidID_Success(string name)
     {
         // New instance so we they don't overlap/clash
         ItemManager itemManager = new ItemManager(catalog);
-        string itemID = itemManager.CreateModifiedItemID(name);
-        Assert.That(itemID, Does.StartWith($"{name}."));
-        Assert.That(itemManager.IsValidID(itemID));
+        string firstItemID = itemManager.CreateModifiedItemID(name);
+        Assert.That(firstItemID, Does.StartWith($"{name}."));
+        Assert.That(itemManager.IsValidID(firstItemID));
+        // Each call should produce a valid unique ID
+        string secondItemID = itemManager.CreateModifiedItemID(name);
+        Assert.That(itemManager.IsValidID(secondItemID));
+        Assert.That(firstItemID, Is.Not.EqualTo(secondItemID));
     }
 
     [Test, TestCaseSource("invalidItemIDProvider")]
@@ -85,8 +92,73 @@ public class ItemManagerTest
     }
 
     [Test, TestCaseSource("validMixedItemIDProvider")]
-    public void IsValidID_ValidID_Success(string itemID)
+    public void IsValidID_ValidID_True(string itemID)
     {
-        Assert.That(sharedItemManager.IsValidID(itemID));
+        Assert.That(sharedItemManager.IsValidID(itemID), Is.True);
+    }
+
+    [Test, TestCaseSource("invalidItemIDProvider")]
+    public void IsValidID_InvalidID_False(string itemID)
+    {
+        Assert.That(sharedItemManager.IsValidID(itemID), Is.False);
+    }
+
+    [Test, TestCaseSource("validStaticItemIDProvider")]
+    public void IsStaticItemID_StaticID_True(string itemID)
+    {
+        Assert.That(sharedItemManager.IsStaticItemID(itemID), Is.True);
+    }
+
+    [Test]
+    public void IsStaticItemID_ModifiedID_False()
+    {
+        Assert.That(sharedItemManager.IsStaticItemID(modifiedSwordItemID), Is.False);
+    }
+
+    [Test]
+    public void IsModifiedItemID_ModifiedID_True()
+    {
+        Assert.That(sharedItemManager.IsModifiedItemID(modifiedSwordItemID), Is.True);
+    }
+
+    [Test, TestCaseSource("validStaticItemIDProvider")]
+    public void IsModifiedItemID_StaticID_False(string itemID)
+    {
+        Assert.That(sharedItemManager.IsModifiedItemID(itemID), Is.False);
+    }
+
+    [Test]
+    public void NumModifiedItems()
+    {
+        ItemManager manager = new ItemManager(catalog);
+        Assert.That(manager.NumModifiedItems(), Is.EqualTo(0));
+        manager.CreateModifiedItemID(swordItemID);
+        Assert.That(manager.NumModifiedItems(), Is.EqualTo(1));
+        manager.CreateModifiedItemID(shieldItemID);
+        Assert.That(manager.NumModifiedItems(), Is.EqualTo(2));
+    }
+
+    [Test]
+    public void NumStaticIDs()
+    {
+        // Modified items shouldn't increment the static item count
+        ItemManager manager = new ItemManager(catalog);
+        Assert.That(manager.NumStaticItems(), Is.EqualTo(2));
+        manager.CreateModifiedItemID(swordItemID);
+        Assert.That(manager.NumStaticItems(), Is.EqualTo(2));
+    }
+
+    [Test]
+    public void GetItemData_ValidID_Success()
+    {
+        Assert.That(sharedItemManager.GetItemData(shieldItemID), Is.EqualTo(item_shield));
+        Assert.That(sharedItemManager.GetItemData(swordItemID), Is.EqualTo(item_sword));
+        Assert.That(sharedItemManager.GetItemData(modifiedSwordItemID), Is.EqualTo(item_sword));
+    }
+
+    [Test, TestCaseSource("invalidItemIDProvider")]
+    public void GetItemData_InvalidID_null(string itemID)
+    {
+        Assert.That(sharedItemManager.GetItemData(itemID), Is.Null);
     }
 }

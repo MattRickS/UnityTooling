@@ -47,7 +47,7 @@ namespace Inventory
             return modifiedItem;
         }
 
-        public int NumModifiedIDs() { return modifiedItems.Count; }
+        public int NumModifiedItems() { return modifiedItems.Count; }
         public int NumStaticItems() { return catalog.NumItems(); }
         public bool IsValidID(string id)
         {
@@ -62,6 +62,7 @@ namespace Inventory
         */
         public ItemData GetItemData(string id)
         {
+            if (string.IsNullOrEmpty(id)) { return null; }
             ModifiedItem modifiedItem;
             if (modifiedItemMapping.TryGetValue(id, out modifiedItem))
             {
