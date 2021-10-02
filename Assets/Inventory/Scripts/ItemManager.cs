@@ -6,26 +6,23 @@ using UnityEngine;
 namespace Inventory
 {
     /*
-    Interface for managing items and inventories.
+    Interface for managing items.
 
     ItemData and Catalogs are static data that can be freely referenced and shared.
-    ModifiedItems and Inventories are stateful, so are tracked by the InventoryService
-    and referenced via IDs. This ensures the (de)serialization is centralised to avoid
-    data becoming duplicated.
+    ModifiedItems are stateful, so are tracked by the ItemManager and referenced
+    via IDs. This ensures the (de)serialization is centralised to avoid data becoming
+    duplicated.
     */
     [Serializable]
-    public class InventoryService : GameServices.IGameService, ISerializationCallbackReceiver
+    public class ItemManager : ISerializationCallbackReceiver
     {
-        public string saveName = "InventoryService";
         public Catalog catalog;
         public List<ModifiedItem> modifiedItems = new List<ModifiedItem>();
-        public List<Inventory> inventories = new List<Inventory>();
 
         private Dictionary<string, ModifiedItem> modifiedItemMapping = new Dictionary<string, ModifiedItem>();
-        private Dictionary<string, Inventory> inventoryMapping = new Dictionary<string, Inventory>();
 
-        public InventoryService() { }
-        public InventoryService(Catalog catalog) { this.catalog = catalog; }
+        public ItemManager() { }
+        public ItemManager(Catalog catalog) { this.catalog = catalog; }
 
         private ModifiedItem CreateModifiedItem(string itemID)
         {
@@ -103,39 +100,7 @@ namespace Inventory
         }
         public bool IsModifiedItemID(string id) { return modifiedItemMapping.ContainsKey(id); }
 
-        // Inventories
-        public Inventory CreateInventory(int size)
-        {
-            Inventory inventory = new Inventory(size);
-            inventories.Add(inventory);
-            inventoryMapping.Add(inventory.Id(), inventory);
-            return inventory;
-        }
-        public Inventory GetInventory(string inventoryID) { return inventoryMapping[inventoryID]; }
-
         // Serialization
-        public bool Save()
-        {
-            // TODO: This will save the catalog into the JSON? Uneeded though.
-            //       Could remove from the before serialisation?
-            string json = JsonUtility.ToJson(this);
-            return SaveManager.SaveJSON(saveName, json);
-        }
-        public bool Load()
-        {
-            if (!SaveManager.SaveExists(saveName))
-            {
-                return false;
-            }
-            string json;
-            if (!SaveManager.LoadJSON(saveName, out json))
-            {
-                return false;
-            }
-            JsonUtility.FromJsonOverwrite(json, this);
-            return true;
-        }
-
         public void OnBeforeSerialize() { }
         public void OnAfterDeserialize()
         {
@@ -143,12 +108,6 @@ namespace Inventory
             foreach (ModifiedItem modifiedItem in modifiedItems)
             {
                 modifiedItemMapping.Add(modifiedItem.Id(), modifiedItem);
-            }
-
-            inventoryMapping = new Dictionary<string, Inventory>();
-            foreach (Inventory inventory in inventories)
-            {
-                inventoryMapping.Add(inventory.Id(), inventory);
             }
         }
     }

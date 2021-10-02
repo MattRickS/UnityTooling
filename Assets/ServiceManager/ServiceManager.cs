@@ -6,19 +6,28 @@ namespace GameServices
     public class ServiceManager : MonoBehaviour
     {
         public bool loadOnStart = true;
-        public Inventory.InventoryService inventoryService;
+        public bool saveOnQuit = true;
+        public InventoryService inventoryService;
 
         public void Start()
         {
             ServiceLocator.Initialize();
 
             // Inventory Service
-            ServiceLocator.Instance.Register<Inventory.InventoryService>(inventoryService);
+            ServiceLocator.Instance.Register<InventoryService>(inventoryService);
 
             // Each service should load it's state
             if (loadOnStart)
             {
                 Load();
+            }
+        }
+
+        public void OnApplicationQuit()
+        {
+            if (saveOnQuit)
+            {
+                Save();
             }
         }
 

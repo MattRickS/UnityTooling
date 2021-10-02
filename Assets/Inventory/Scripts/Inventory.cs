@@ -7,18 +7,25 @@ namespace Inventory
 {
     /*
     Inventories are not ScriptableObjects as they are stateful and must be
-    tracked by the InventoryService. They can be prepopulated on the service or
+    tracked by the InventoryManager. They can be prepopulated on the manager or
     loaded from configuration.
     */
     [Serializable]
     public class Inventory
     {
+        // For now, dependency inject the manager and InventoryManager serialisation
+        // ensures all inventories use a shared instance. Should look at making this
+        // private and see if there are better serialization options.
+        private ItemManager itemManager;
         public string inventoryID = System.Guid.NewGuid().ToString();
+
+        public void SetItemManager(ItemManager itemManager) { this.itemManager = itemManager; }
 
         [SerializeField] List<Slot> slots;
 
-        public Inventory(int size)
+        public Inventory(ItemManager itemManager, int size)
         {
+            this.itemManager = itemManager;
             slots = new List<Slot>(size);
             for (int i = 0; i < size; i++)
             {
@@ -28,11 +35,7 @@ namespace Inventory
 
         public string Id() { return inventoryID; }
 
-        public ItemData GetItemData(int index)
-        {
-            InventoryService service = GameServices.ServiceLocator.Instance.Get<InventoryService>();
-            return service.GetItemData(slots[index].itemID);
-        }
+        public ItemData GetItemData(int index) { return itemManager.GetItemData(slots[index].itemID); }
 
         public int NumSlots() { return slots.Count; }
 
@@ -52,11 +55,10 @@ namespace Inventory
             if (IsEmpty(index)) { return 0; }
 
             Slot slot = slots[index];
-            InventoryService service = GameServices.ServiceLocator.Instance.Get<InventoryService>();
-            int value = service.GetItemStatisticValue(slot.itemID, stat) * (slot.quantity - slot.instanceIDs.Count);
+            int value = itemManager.GetItemStatisticValue(slot.itemID, stat) * (slot.quantity - slot.instanceIDs.Count);
             foreach (string instanceID in slot.instanceIDs)
             {
-                value += service.GetItemStatisticValue(instanceID, stat);
+                value += itemManager.GetItemStatisticValue(instanceID, stat);
             }
             return value;
         }
@@ -97,13 +99,13 @@ namespace Inventory
         Adds up to `quantity` items, starting from the front of the Inventory.
         Returns the quantity that was added which may be less than the given
         quantity if there is insufficient space.
+        If adding a modified item ID, only one can be added (as it should always
+        be a unique instance).
         */
         public int AddItem(string itemID, int quantity = 1)
         {
-            InventoryService service = GameServices.ServiceLocator.Instance.Get<InventoryService>();
-
             // Check if adding a modified item and determine the ItemData ID
-            bool isModifiedItem = service.IsModifiedItemID(itemID);
+            bool isModifiedItem = itemManager.IsModifiedItemID(itemID);
             string itemDataID = itemID;
             if (isModifiedItem)
             {
@@ -111,12 +113,12 @@ namespace Inventory
                 {
                     throw new Exception($"Cannot add multiples ({quantity}) of modifiedItems");
                 }
-                itemDataID = service.GetItemData(itemID).Id();
+                itemDataID = itemManager.GetItemData(itemID).Id();
             }
 
             // TODO: Populate stacks first
             int remaining = quantity;
-            int maxStackSize = service.GetItemData(itemID).maxStackSize;
+            int maxStackSize = itemManager.GetItemData(itemID).maxStackSize;
             Slot slot;
             int n;
             for (int currIndex = 0; currIndex < NumSlots(); currIndex++)
@@ -156,12 +158,16 @@ namespace Inventory
         */
         public int RemoveItem(string itemID, int quantity = 1)
         {
-            InventoryService service = GameServices.ServiceLocator.Instance.Get<InventoryService>();
-
-            // Check if adding a modified item and determine the ItemData ID
-            if (service.IsModifiedItemID(itemID))
+            // Check if removing a modified item and determine the ItemData ID
+            bool isModifiedItem = itemManager.IsModifiedItemID(itemID);
+            string itemDataID = itemID;
+            if (isModifiedItem)
             {
-                itemID = service.GetItemData(itemID).Id();
+                if (quantity > 1)
+                {
+                    throw new Exception($"Cannot remove multiples ({quantity}) of modifiedItems");
+                }
+                itemDataID = itemManager.GetItemData(itemID).Id();
             }
 
             int remaining = quantity;
@@ -169,13 +175,18 @@ namespace Inventory
             int n;
             for (int currIndex = NumSlots() - 1; currIndex >= 0; currIndex--)
             {
-                if (IsEmpty(currIndex) || !HasItem(currIndex, itemID))
+                if (
+                    IsEmpty(currIndex) || !(
+                        (isModifiedItem && HasItem(currIndex, itemID)) ||
+                        (!isModifiedItem && HasItem(currIndex, itemDataID))
+                    )
+                )
                 {
                     continue;
                 }
+
                 n = Math.Min(remaining, StackSize(currIndex));
                 slot = slots[currIndex];
-                slot.itemID = itemID;
                 slot.quantity -= n;
                 remaining -= n;
 

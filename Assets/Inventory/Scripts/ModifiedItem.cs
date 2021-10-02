@@ -10,7 +10,7 @@ namespace Inventory
         modifiedItem = ModifiedItem(itemID, statistics={Attack: -1})
         value = data.GetStat(Attack) + modifiedItem.GetStatDelta(Attack)
     This is the same value retrieved from:
-        InventoryService.GetItemStatistic(modifiedItemID)
+        ItemManager.GetItemStatistic(modifiedItemID)
     */
     [Serializable]
     public class ModifiedItem
