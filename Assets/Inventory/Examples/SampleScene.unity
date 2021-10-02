@@ -236,11 +236,52 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   loadOnStart: 1
+  saveOnQuit: 1
   inventoryService:
+    itemManager:
+      catalog: {fileID: 11400000, guid: 8c27bfdb83d70254184d331f2be85e79, type: 2}
+      modifiedItems:
+      - modifiedItemID: Armour.Shield.0
+        itemID: Armour.Shield
+        statistics:
+          list:
+          - Key: 0
+            Value: -10
+    inventories:
+    - inventoryID: MyInventory
+      slots:
+      - itemID: Weapon.Sword
+        quantity: 1
+        instanceIDs: []
+      - itemID: Armour.Shield
+        quantity: 1
+        instanceIDs:
+        - Armour.Shield.0
+      - itemID: Consumable.HealthPotion
+        quantity: 5
+        instanceIDs: []
+      - itemID: 
+        quantity: 0
+        instanceIDs: []
+      - itemID: 
+        quantity: 0
+        instanceIDs: []
+      - itemID: 
+        quantity: 0
+        instanceIDs: []
+      - itemID: 
+        quantity: 0
+        instanceIDs: []
+      - itemID: 
+        quantity: 0
+        instanceIDs: []
+      - itemID: 
+        quantity: 0
+        instanceIDs: []
+      - itemID: 
+        quantity: 0
+        instanceIDs: []
     saveName: InventoryService
-    catalog: {fileID: 11400000, guid: 8c27bfdb83d70254184d331f2be85e79, type: 2}
-    modifiedItems: []
-    inventories: []
 --- !u!4 &1631310324
 Transform:
   m_ObjectHideFlags: 0
