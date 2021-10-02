@@ -10,9 +10,19 @@ namespace Inventory
         // TODO: Find some way to change the UI element name to domain name
         //       without losing all the normal list features
         public List<ItemData> items;
-        Dictionary<string, ItemData> itemMapping;
+        private Dictionary<string, ItemData> itemMapping;
 
-        public int Count() { return items.Count; }
+        public static Catalog Create(List<ItemData> items)
+        {
+            Catalog catalog = ScriptableObject.CreateInstance<Catalog>();
+            catalog.items = items;
+            catalog.itemMapping = new Dictionary<string, ItemData>();
+            foreach (ItemData item in items)
+            {
+                catalog.itemMapping.Add(item.Id(), item);
+            }
+            return catalog;
+        }
 
         public ItemData GetItemData(string id)
         {
@@ -37,7 +47,10 @@ namespace Inventory
             // then populating after?
             foreach (ItemData item in items)
             {
-                itemMapping.Add(item.Id(), item);
+                if (item != null)
+                {
+                    itemMapping.Add(item.Id(), item);
+                }
             }
         }
     }

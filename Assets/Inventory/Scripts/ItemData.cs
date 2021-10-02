@@ -4,6 +4,8 @@ using UnityEngine;
 
 namespace Inventory
 {
+    // TODO: Enums are not extensible. Consider replacing with something like this:
+    // https://stackoverflow.com/questions/5424138/extending-enums-in-c-sharp/5424270
     public enum Category
     {
         Armour,
