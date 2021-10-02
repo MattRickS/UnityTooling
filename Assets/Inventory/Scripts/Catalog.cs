@@ -47,10 +47,9 @@ namespace Inventory
             // then populating after?
             foreach (ItemData item in items)
             {
-                if (item != null)
-                {
+                // Hack to avoid the error for now
+                if (!string.IsNullOrEmpty(item.itemName))
                     itemMapping.Add(item.Id(), item);
-                }
             }
         }
     }
