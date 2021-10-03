@@ -26,6 +26,32 @@ public class ItemManagerTest : ItemTestHarness
         Assert.That(() => { sharedItemManager.CreateModifiedItemID(name); }, Throws.TypeOf<KeyNotFoundException>());
     }
 
+    [Test]
+    public void DestroyModifiedItemID_ValidID_True()
+    {
+        // New instance so we they don't overlap/clash
+        ItemManager itemManager = new ItemManager(catalog);
+        string itemID = itemManager.CreateModifiedItemID(shieldItemID);
+        Assert.That(itemManager.NumModifiedItems(), Is.EqualTo(1));
+        Assert.That(itemManager.IsModifiedItemID(itemID), Is.True);
+
+        Assert.That(itemManager.DestroyModifiedItemID(itemID), Is.True);
+        Assert.That(itemManager.NumModifiedItems(), Is.EqualTo(0));
+        Assert.That(itemManager.IsModifiedItemID(itemID), Is.False);
+    }
+
+    [TestCaseSource("validStaticItemIDProvider")]
+    public void DestroyModifiedItemID_StaticID_False(string name)
+    {
+        Assert.That(sharedItemManager.DestroyModifiedItemID(name), Is.False);
+    }
+
+    [TestCaseSource("invalidItemIDProvider")]
+    public void DestroyModifiedItemID_InvalidID_False(string name)
+    {
+        Assert.That(sharedItemManager.DestroyModifiedItemID(name), Is.False);
+    }
+
     [TestCaseSource("validMixedItemIDProvider")]
     public void IsValidID_ValidID_True(string itemID)
     {

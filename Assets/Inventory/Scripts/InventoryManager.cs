@@ -25,6 +25,8 @@ namespace Inventory
         public InventoryManager() { }
         public InventoryManager(ItemManager itemManager) { this.itemManager = itemManager; }
 
+        public ItemManager ItemManager { get { return itemManager; } }
+
         // Inventories
         public string CreateInventory(uint size)
         {
