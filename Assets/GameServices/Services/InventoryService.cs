@@ -15,6 +15,11 @@ namespace GameServices
     public class InventoryService : Inventory.InventoryManager, IGameService
     {
         [SerializeField] private string saveName = "InventoryService";
+        [SerializeField] private bool loadOnStart = true;
+        [SerializeField] private bool saveOnQuit = true;
+
+        public bool LoadOnStart { get { return loadOnStart; } set { loadOnStart = value; } }
+        public bool SaveOnQuit { get { return saveOnQuit; } set { saveOnQuit = value; } }
 
         public bool Save()
         {

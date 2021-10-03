@@ -5,8 +5,6 @@ namespace GameServices
 {
     public class ServiceManager : MonoBehaviour
     {
-        public bool loadOnStart = true;
-        public bool saveOnQuit = true;
         public InventoryService inventoryService;
 
         public void Start()
@@ -17,21 +15,37 @@ namespace GameServices
             ServiceLocator.Instance.Register<InventoryService>(inventoryService);
 
             // Each service should load it's state
-            if (loadOnStart)
+            foreach (IGameService service in ServiceLocator.Instance.Services())
             {
-                Load();
+                if (!service.LoadOnStart)
+                {
+                    Debug.LogWarning($"Load is disabled for {service}");
+                }
+                else if (!service.Load())
+                {
+                    // If data fails to load on startup, we don't want to save a corrupt version
+                    Debug.LogError($"Failed to load data for {service}; Disabling Save.");
+                    service.LoadOnStart = false;
+                }
             }
         }
 
         public void OnApplicationQuit()
         {
-            if (saveOnQuit)
+            foreach (IGameService service in ServiceLocator.Instance.Services())
             {
-                Save();
+                if (!service.SaveOnQuit)
+                {
+                    Debug.LogWarning($"Save is disabled for {service}");
+                }
+                else if (!service.Save())
+                {
+                    Debug.LogError($"Failed to save data for {service}");
+                }
             }
         }
 
-        public void Load()
+        public void LoadServices()
         {
             foreach (IGameService service in ServiceLocator.Instance.Services())
             {
@@ -42,7 +56,7 @@ namespace GameServices
             }
         }
 
-        public void Save()
+        public void SaveServices()
         {
             foreach (IGameService service in ServiceLocator.Instance.Services())
             {
