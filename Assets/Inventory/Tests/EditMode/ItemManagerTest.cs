@@ -98,19 +98,19 @@ public class ItemManagerTest : ItemTestHarness
         Assert.That(sharedItemManager.GetItemData(itemID), Is.Null);
     }
 
-    [TestCase(ItemManagerTest.shieldItemID, Statistic.Value, ExpectedResult = 100)]
-    [TestCase(ItemManagerTest.shieldItemID, Statistic.Weight, ExpectedResult = 20)]
-    [TestCase(ItemManagerTest.shieldItemID, Statistic.Attack, ExpectedResult = 0)]
-    [TestCase(ItemManagerTest.shieldItemID, Statistic.Defense, ExpectedResult = 2)]
-    [TestCase(ItemManagerTest.swordItemID, Statistic.Value, ExpectedResult = 150)]
-    [TestCase(ItemManagerTest.swordItemID, Statistic.Weight, ExpectedResult = 10)]
-    [TestCase(ItemManagerTest.swordItemID, Statistic.Attack, ExpectedResult = 3)]
-    [TestCase(ItemManagerTest.swordItemID, Statistic.Defense, ExpectedResult = 0)]
+    [TestCase(shieldItemID, Statistic.Value, ExpectedResult = 100)]
+    [TestCase(shieldItemID, Statistic.Weight, ExpectedResult = 20)]
+    [TestCase(shieldItemID, Statistic.Attack, ExpectedResult = 0)]
+    [TestCase(shieldItemID, Statistic.Defense, ExpectedResult = 2)]
+    [TestCase(swordItemID, Statistic.Value, ExpectedResult = 150)]
+    [TestCase(swordItemID, Statistic.Weight, ExpectedResult = 10)]
+    [TestCase(swordItemID, Statistic.Attack, ExpectedResult = 3)]
+    [TestCase(swordItemID, Statistic.Defense, ExpectedResult = 0)]
     // modifiedSword is the same, but with a delta modifying the value
-    [TestCase(ItemManagerTest.modifiedSwordItemID, Statistic.Value, ExpectedResult = 140)]
-    [TestCase(ItemManagerTest.modifiedSwordItemID, Statistic.Weight, ExpectedResult = 10)]
-    [TestCase(ItemManagerTest.modifiedSwordItemID, Statistic.Attack, ExpectedResult = 3)]
-    [TestCase(ItemManagerTest.modifiedSwordItemID, Statistic.Defense, ExpectedResult = 0)]
+    [TestCase(modifiedSwordItemID, Statistic.Value, ExpectedResult = 140)]
+    [TestCase(modifiedSwordItemID, Statistic.Weight, ExpectedResult = 10)]
+    [TestCase(modifiedSwordItemID, Statistic.Attack, ExpectedResult = 3)]
+    [TestCase(modifiedSwordItemID, Statistic.Defense, ExpectedResult = 0)]
     public int GetItemStatisticValue_ValidID_GetsValue(string itemID, Statistic statistic)
     {
         return sharedItemManager.GetItemStatisticValue(itemID, statistic);
@@ -125,10 +125,10 @@ public class ItemManagerTest : ItemTestHarness
         );
     }
 
-    [TestCase(ItemManagerTest.modifiedSwordItemID, Statistic.Value, ExpectedResult = -10)]
-    [TestCase(ItemManagerTest.modifiedSwordItemID, Statistic.Weight, ExpectedResult = 0)]
-    [TestCase(ItemManagerTest.modifiedSwordItemID, Statistic.Attack, ExpectedResult = 0)]
-    [TestCase(ItemManagerTest.modifiedSwordItemID, Statistic.Defense, ExpectedResult = 0)]
+    [TestCase(modifiedSwordItemID, Statistic.Value, ExpectedResult = -10)]
+    [TestCase(modifiedSwordItemID, Statistic.Weight, ExpectedResult = 0)]
+    [TestCase(modifiedSwordItemID, Statistic.Attack, ExpectedResult = 0)]
+    [TestCase(modifiedSwordItemID, Statistic.Defense, ExpectedResult = 0)]
     public int GetItemStatisticDeltaValue_ValidID_GetsValue(string itemID, Statistic statistic)
     {
         return sharedItemManager.GetItemStatisticDeltaValue(itemID, statistic);

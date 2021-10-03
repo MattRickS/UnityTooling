@@ -17,7 +17,7 @@ namespace Inventory
         public bool IsStacked() { return quantity > 0; }
         public bool HasModifiedItem() { return instanceIDs.Count > 0; }
         public bool HasItem() { return itemID != NO_ITEM; }
-        public bool HasItem(string itemID) { return this.itemID == itemID || instanceIDs.Contains(itemID); }
+        public bool HasExactItemID(string itemID) { return this.itemID == itemID || instanceIDs.Contains(itemID); }
     }
 
 }

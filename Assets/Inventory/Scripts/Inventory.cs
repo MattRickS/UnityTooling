@@ -53,7 +53,7 @@ namespace Inventory
             int quantityPlaceable = 0;
             foreach (Slot slot in slots)
             {
-                if (slot.IsEmpty() || (slot.HasItem(itemID) && slot.quantity < maxStackSize))
+                if (slot.IsEmpty() || (slot.HasExactItemID(itemID) && slot.quantity < maxStackSize))
                 {
                     quantityPlaceable += (maxStackSize - slot.quantity);
                     if (quantityPlaceable >= quantity)
@@ -61,6 +61,85 @@ namespace Inventory
                 }
             }
             return false;
+        }
+        public bool HasCapacity(Dictionary<string, int> itemQuantities)
+        {
+            Dictionary<string, int> maxStackSizes = new Dictionary<string, int>();
+            Dictionary<string, int> remainingItemQuantities = new Dictionary<string, int>(itemQuantities);
+            List<string> stackableItems = new List<string>();
+            List<string> nonStackableItems = new List<string>();
+
+            foreach (var itemID in itemQuantities.Keys)
+            {
+                ItemData itemData = GetItemData(itemID);
+                // If the item is modified, aggregate it with the base itemID
+                string trueItemID = itemID;
+                if (itemData.Id() != itemID)
+                {
+                    trueItemID = itemData.Id();
+                    if (remainingItemQuantities.ContainsKey(trueItemID))
+                        remainingItemQuantities[trueItemID] += remainingItemQuantities[itemID];
+                    else
+                        remainingItemQuantities[trueItemID] = remainingItemQuantities[itemID];
+                    remainingItemQuantities.Remove(itemID);
+                }
+
+                maxStackSizes[trueItemID] = itemData.maxStackSize;
+                // Avoid adding the key multiple times for modified and base items
+                if (itemData.maxStackSize > 1 && !stackableItems.Contains(trueItemID))
+                    stackableItems.Add(trueItemID);
+                else if ((itemData.maxStackSize == 1 && !nonStackableItems.Contains(trueItemID)))
+                    nonStackableItems.Add(trueItemID);
+            }
+
+            List<Slot> emptySlots = new List<Slot>();
+            foreach (Slot slot in slots)
+            {
+                if (slot.IsEmpty())
+                {
+                    // Non-stackable items can be immediately placed in empty slots
+                    if (nonStackableItems.Count > 0)
+                    {
+                        string itemID = nonStackableItems[nonStackableItems.Count - 1];
+                        remainingItemQuantities[itemID] -= 1;
+                        if (remainingItemQuantities[itemID] == 0)
+                        {
+                            remainingItemQuantities.Remove(itemID);
+                            if (remainingItemQuantities.Count == 0)
+                                return true;
+                            nonStackableItems.RemoveAt(nonStackableItems.Count - 1);
+                        }
+                    }
+                    // Track remaining empty slots. This is to avoid a situation where
+                    // we pick an abritrary stackedItem to fill the empty slot when
+                    // there could be a partial stack for that item later.
+                    else
+                    {
+                        emptySlots.Add(slot);
+                    }
+                }
+                // Max out partial stacks
+                else if (stackableItems.Contains(slot.itemID))
+                {
+                    int remainingQuantity = remainingItemQuantities[slot.itemID];
+                    remainingQuantity -= Math.Min(remainingQuantity, maxStackSizes[slot.itemID] - slot.quantity);
+                    if (remainingQuantity == 0)
+                    {
+                        remainingItemQuantities.Remove(slot.itemID);
+                        stackableItems.Remove(slot.itemID);
+                    }
+                    else
+                    {
+                        remainingItemQuantities[slot.itemID] = remainingQuantity;
+                    }
+                }
+            }
+
+            int requiredSlots = 0;
+            foreach (var pair in remainingItemQuantities)
+                requiredSlots += (pair.Value + maxStackSizes[pair.Key] - 1) / maxStackSizes[pair.Key];
+
+            return emptySlots.Count >= requiredSlots;
         }
 
         // Statistics

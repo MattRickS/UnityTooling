@@ -18,23 +18,51 @@ public class InventoryManagerTest : ItemTestHarness
         Assert.That(manager.IsValidInventoryID(inventoryID), Is.True);
     }
 
-    [TestCase(ItemTestHarness.shieldItemID, 1)]
-    [TestCase(ItemTestHarness.modifiedSwordItemID, 1)]  // Modified items work
-    [TestCase(ItemTestHarness.swordItemID, 10)]  // Max Capacity for unstacked
-    [TestCase(ItemTestHarness.healthPotionID, 100)]  // Stack size of 10
-    public void HasCapacity_ValidItemHasCapacity_True(string itemID, int quantity)
+    [TestCase(shieldItemID, 1, ExpectedResult = true)]
+    [TestCase(modifiedSwordItemID, 1, ExpectedResult = true)]  // Modified items work
+    [TestCase(swordItemID, 10, ExpectedResult = true)]  // Max Capacity for unstacked
+    [TestCase(healthPotionID, 100, ExpectedResult = true)]  // Stack size of 10
+    [TestCase(swordItemID, 11, ExpectedResult = false)]
+    [TestCase(healthPotionID, 101, ExpectedResult = false)]
+    public bool HasCapacity_ValidItemHasCapacity_Result(string itemID, int quantity)
     {
         InventoryManager manager = new InventoryManager(sharedItemManager);
         string inventoryID = manager.CreateInventory(10);
-        Assert.That(manager.HasCapacity(inventoryID, itemID, quantity: quantity), Is.True);
+        return manager.HasCapacity(inventoryID, itemID, quantity: quantity);
     }
 
-    [TestCase(ItemTestHarness.swordItemID, 11)]  // Max Capacity for unstacked
-    [TestCase(ItemTestHarness.healthPotionID, 101)]  // Stack size of 10
-    public void HasCapacity_ValidItemHasCapacity_False(string itemID, int quantity)
+    public static IEnumerable<Dictionary<string, int>> itemBundleProviderA()
+    {
+        yield return new Dictionary<string, int>() { { shieldItemID, 3 } };
+        yield return new Dictionary<string, int>() { { shieldItemID, 2 }, { swordItemID, 1 } };
+        yield return new Dictionary<string, int>() { { shieldItemID, 1 }, { swordItemID, 1 }, { modifiedSwordItemID, 1 } };
+        yield return new Dictionary<string, int>() { { shieldItemID, 1 }, { swordItemID, 1 }, { healthPotionID, 10 } };
+        yield return new Dictionary<string, int>() { { shieldItemID, 1 }, { healthPotionID, 20 } };
+        yield return new Dictionary<string, int>() { };
+    }
+
+    public static IEnumerable<Dictionary<string, int>> itemBundleProviderB()
+    {
+        yield return new Dictionary<string, int>() { { shieldItemID, 2 }, { swordItemID, 2 } };
+        yield return new Dictionary<string, int>() { { shieldItemID, 1 }, { swordItemID, 1 }, { healthPotionID, 11 } };
+        yield return new Dictionary<string, int>() { { shieldItemID, 1 }, { healthPotionID, 21 } };
+        yield return new Dictionary<string, int>() { { shieldItemID, 1 }, { swordItemID, 1 }, { modifiedSwordItemID, 1 }, { healthPotionID, 1 } };
+    }
+
+    // TODO: Add cases with existing items in inventory
+    [TestCaseSource("itemBundleProviderA")]
+    public void HasCapacity_ValidItemQuantitiesHasCapacity_True(Dictionary<string, int> itemQuantities)
     {
         InventoryManager manager = new InventoryManager(sharedItemManager);
-        string inventoryID = manager.CreateInventory(10);
-        Assert.That(manager.HasCapacity(inventoryID, itemID, quantity: quantity), Is.False);
+        string inventoryID = manager.CreateInventory(3);
+        Assert.That(manager.HasCapacity(inventoryID, itemQuantities), Is.True);
+    }
+
+    [TestCaseSource("itemBundleProviderB")]
+    public void HasCapacity_ValidItemQuantitiesHasCapacity_False(Dictionary<string, int> itemQuantities)
+    {
+        InventoryManager manager = new InventoryManager(sharedItemManager);
+        string inventoryID = manager.CreateInventory(3);
+        Assert.That(manager.HasCapacity(inventoryID, itemQuantities), Is.False);
     }
 }

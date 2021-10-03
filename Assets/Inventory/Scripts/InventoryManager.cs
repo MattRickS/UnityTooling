@@ -19,9 +19,8 @@ namespace Inventory
     public class InventoryManager : ISerializationCallbackReceiver
     {
         [SerializeField] private ItemManager itemManager;
+        [SerializeField] private List<Inventory> inventories = new List<Inventory>();
         private Dictionary<string, Inventory> inventoryMapping = new Dictionary<string, Inventory>();
-
-        public List<Inventory> inventories = new List<Inventory>();
 
         public InventoryManager() { }
         public InventoryManager(ItemManager itemManager) { this.itemManager = itemManager; }
@@ -45,6 +44,11 @@ namespace Inventory
         {
             Inventory inventory = inventoryMapping[inventoryID];
             return inventory.HasCapacity(itemID, quantity);
+        }
+        public bool HasCapacity(string inventoryID, Dictionary<string, int> itemQuantities)
+        {
+            Inventory inventory = inventoryMapping[inventoryID];
+            return inventory.HasCapacity(itemQuantities);
         }
 
         // Serialization
