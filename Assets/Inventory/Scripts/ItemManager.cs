@@ -24,13 +24,9 @@ namespace Inventory
         public ItemManager() { }
         public ItemManager(Catalog catalog) { this.catalog = catalog; }
 
-        private void ValidateID(string itemID)
-        {
-            if (!IsValidID(itemID)) { throw new KeyNotFoundException(itemID); }
-        }
         private ModifiedItem CreateModifiedItem(string itemID, string newItemID = null)
         {
-            ValidateID(itemID);
+            if (!IsStaticItemID(itemID)) { throw new KeyNotFoundException($"{itemID} is not a static item"); }
             ModifiedItem modifiedItem;
             if (string.IsNullOrEmpty(newItemID))
             {
@@ -76,6 +72,7 @@ namespace Inventory
         */
         public int GetItemStatisticValue(string id, Statistic stat)
         {
+            if (!IsValidID(id)) { throw new KeyNotFoundException($"{id} is not a an existing id"); }
             ModifiedItem modItem;
             int value = 0;
             if (modifiedItemMapping.TryGetValue(id, out modItem))
@@ -92,6 +89,7 @@ namespace Inventory
         */
         public int GetItemStatisticDeltaValue(string id, Statistic stat)
         {
+            if (!IsModifiedItemID(id)) { throw new KeyNotFoundException(); }
             ModifiedItem modItem;
             if (modifiedItemMapping.TryGetValue(id, out modItem))
             {
@@ -110,10 +108,10 @@ namespace Inventory
             return CreateModifiedItem(itemID, newItemID).Id();
         }
         /*
-        Modifies the delta for an itemID. If the given itemID was not currently a
+        Sets the delta value for an itemID. If the given itemID was not currently a
         tracked instance, a new instance is created and the ID returned.
         */
-        public string ModifyItemDelta(string itemID, Statistic statistic, int value)
+        public string SetItemStatisticDeltaValue(string itemID, Statistic statistic, int value)
         {
             ModifiedItem modItem;
             if (!modifiedItemMapping.TryGetValue(itemID, out modItem))
@@ -122,6 +120,21 @@ namespace Inventory
             }
             modItem.SetStatDelta(statistic, value);
             return modItem.Id();
+        }
+        /*
+        Increments/Decrements the delta value for an existing modified item.
+        If the modified item exists but no value is set, the modifier is set as the value.
+        Throws a KeyNotFoundException if no modified item exists for the given ID.
+        Returns the resulting delta value.
+        */
+        public int ModifyItemStatisticDeltaValue(string itemID, Statistic statistic, int modifier)
+        {
+            ModifiedItem modItem;
+            if (!modifiedItemMapping.TryGetValue(itemID, out modItem))
+            {
+                throw new KeyNotFoundException();
+            }
+            return modItem.ModifyStatDelta(statistic, modifier);
         }
 
         // Serialization

@@ -46,5 +46,16 @@ namespace Inventory
         {
             statistics[stat] = value;
         }
+        public int ModifyStatDelta(Statistic stat, int modifier)
+        {
+            int updatedValue = modifier;
+            int value;
+            if (statistics.TryGetValue(stat, out value))
+            {
+                updatedValue = value + modifier;
+            }
+            statistics[stat] = updatedValue;
+            return updatedValue;
+        }
     }
 }
