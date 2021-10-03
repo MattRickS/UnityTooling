@@ -1,77 +1,11 @@
 using System.Collections.Generic;
 using NUnit.Framework;
-using UnityEngine;
 
 using Inventory;
 
 
-public class ItemManagerTest
+public class ItemManagerTest : ItemTestHarness
 {
-    private ItemData item_shield;
-    private ItemData item_sword;
-    private Catalog catalog;
-    private ItemManager sharedItemManager;
-    private const string shieldItemID = "Armour.shield";
-    private const string swordItemID = "Weapon.sword";
-    private const string modifiedSwordItemID = "MyCustomItemID";
-
-    public static IEnumerable<string> validStaticItemIDProvider()
-    {
-        yield return shieldItemID;
-        yield return swordItemID;
-    }
-
-    public static IEnumerable<string> validMixedItemIDProvider()
-    {
-        yield return shieldItemID;
-        yield return swordItemID;
-        yield return modifiedSwordItemID;
-    }
-
-    public static IEnumerable<string> invalidItemIDProvider()
-    {
-        yield return "Armour.sword";
-        yield return "Weapon.shield";
-        yield return "Jibberish";
-        yield return "";
-        yield return null;
-    }
-
-    [SetUp]
-    public void SetUp()
-    {
-        item_shield = TestUtilities.CreateItemData("shield", Category.Armour, "Defensive shield", new Dictionary<Statistic, int>() {
-            {Statistic.Value, 100},
-            {Statistic.Weight, 20},
-            {Statistic.Defense, 2},
-        });
-        item_sword = TestUtilities.CreateItemData("sword", Category.Weapon, "Stabby sword", new Dictionary<Statistic, int>() {
-            {Statistic.Value, 150},
-            {Statistic.Weight, 10},
-            {Statistic.Attack, 3},
-        });
-
-        catalog = Catalog.Create(
-            new List<ItemData>() { item_shield, item_sword }
-        );
-        sharedItemManager = new ItemManager(catalog);
-        sharedItemManager.CreateModifiedItemID(swordItemID, modifiedSwordItemID);
-        sharedItemManager.SetItemStatisticDeltaValue(modifiedSwordItemID, Statistic.Value, -10);
-        // Can use this to load from an existing instance
-        // catalog = (Catalog)AssetDatabase.LoadAssetAtPath( pathToTestCatalog, typeof(Catalog) );
-    }
-
-    [TearDown]
-    public void TearDown()
-    {
-        Object.DestroyImmediate(item_shield);
-        Object.DestroyImmediate(item_sword);
-        Object.DestroyImmediate(catalog);
-    }
-
-    // =========================================================================
-    // Tests
-
     [TestCaseSource("validStaticItemIDProvider")]
     public void CreateModifiedItemID_ValidID_Success(string name)
     {

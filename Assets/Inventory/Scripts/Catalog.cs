@@ -25,15 +25,17 @@ namespace Inventory
         }
 
         public int NumItems() { return items.Count; }
-        public bool IsValidID(string id)
+        public bool IsValidID(string itemID)
         {
-            return !string.IsNullOrEmpty(id) && itemMapping.ContainsKey(id);
+            return !string.IsNullOrEmpty(itemID) && itemMapping.ContainsKey(itemID);
         }
 
-        public ItemData GetItemData(string id)
+        public ItemData GetItemData(string itemID)
         {
+            if (string.IsNullOrEmpty(itemID)) return null;
+
             ItemData data;
-            if (itemMapping.TryGetValue(id, out data))
+            if (itemMapping.TryGetValue(itemID, out data))
             {
                 return data;
             }
