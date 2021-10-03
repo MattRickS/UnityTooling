@@ -188,13 +188,11 @@ namespace Inventory
         }
 
         // Modification
-        /*
-        Adds up to `quantity` items, starting from the front of the Inventory.
-        Returns the quantity that was added which may be less than the given
-        quantity if there is insufficient space.
-        If adding a modified item ID, only one can be added (as it should always
-        be a unique instance).
-        */
+        /// <summary>Adds up to `quantity` items, filling stacks and then filling empty
+        /// slots from from the front of the Inventory. Returns the quantity that was
+        /// added which may be less than the given quantity if there is insufficient
+        /// space. If adding a modified item ID, only one can be added (as it should
+        /// always be a unique instance).</summary>
         public int AddItem(string itemID, int quantity = 1)
         {
             // Check if adding a modified item and determine the ItemData ID
@@ -211,21 +209,24 @@ namespace Inventory
             }
 
             int remaining = quantity;
+
+            bool SetSlot(Slot slot, int count)
+            {
+                slot.itemID = itemDataID;
+                slot.quantity = count;
+                if (isModifiedItem)
+                    slot.instanceIDs.Add(itemID);
+                remaining -= count;
+                return remaining <= 0;
+            }
+
             if (!itemData.IsStackable())
             {
                 // Non-stackable items just fill up the first empty slots
                 foreach (Slot slot in slots)
                 {
-                    if (slot.IsEmpty())
-                    {
-                        slot.itemID = itemDataID;
-                        slot.quantity = 1;
-                        if (isModifiedItem)
-                            slot.instanceIDs.Add(itemID);
-                        remaining -= 1;
-                        if (remaining <= 0)
-                            return quantity;
-                    }
+                    if (slot.IsEmpty() && SetSlot(slot, 1))
+                        return quantity;
                 }
             }
             else
@@ -240,12 +241,7 @@ namespace Inventory
                     else if (slot.itemID == itemDataID && slot.quantity < itemData.maxStackSize)
                     {
                         int toAdd = Math.Min(remaining, itemData.maxStackSize - slot.quantity);
-                        slot.itemID = itemDataID;
-                        slot.quantity += toAdd;
-                        if (isModifiedItem)
-                            slot.instanceIDs.Add(itemID);
-                        remaining -= toAdd;
-                        if (remaining == 0)
+                        if (SetSlot(slot, toAdd))
                             return quantity;
                     }
                 }
@@ -254,12 +250,7 @@ namespace Inventory
                 foreach (Slot slot in emptySlots)
                 {
                     int toAdd = Math.Min(remaining, itemData.maxStackSize);
-                    slot.itemID = itemDataID;
-                    slot.quantity += toAdd;
-                    if (isModifiedItem)
-                        slot.instanceIDs.Add(itemID);
-                    remaining -= toAdd;
-                    if (remaining == 0)
+                    if (SetSlot(slot, toAdd))
                         return quantity;
                 }
             }
