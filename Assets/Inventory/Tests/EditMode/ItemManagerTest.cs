@@ -242,8 +242,18 @@ public class ItemManagerTest
         Assert.That(weight, Is.EqualTo(50));
     }
 
+    [TestCaseSource("invalidItemIDProvider")]
+    public void SetItemStatisticDeltaValue_InvalidID_Throws(string itemID)
+    {
+        ItemManager manager = new ItemManager(catalog);
+        Assert.That(
+            () => { manager.SetItemStatisticDeltaValue(itemID, Statistic.Weight, 50); },
+            Throws.TypeOf<KeyNotFoundException>()
+        );
+    }
+
     [Test]
-    public void ModifyItemStatisticDeltaValue_ModifiedID_NewModifiedItem()
+    public void ModifyItemStatisticDeltaValue_ModifiedID_ModifiesValue()
     {
         ItemManager manager = new ItemManager(catalog);
         string itemID = manager.CreateModifiedItemID(swordItemID);
@@ -256,6 +266,25 @@ public class ItemManagerTest
         // No weight delta set yet
         int weight = manager.ModifyItemStatisticDeltaValue(itemID, Statistic.Weight, 35);
         Assert.That(weight, Is.EqualTo(35));
+    }
 
+    [TestCaseSource("validStaticItemIDProvider")]
+    public void ModifyItemStatisticDeltaValue_StaticID_Throws(string itemID)
+    {
+        ItemManager manager = new ItemManager(catalog);
+        Assert.That(
+            () => { manager.ModifyItemStatisticDeltaValue(itemID, Statistic.Weight, 50); },
+            Throws.TypeOf<KeyNotFoundException>()
+        );
+    }
+
+    [TestCaseSource("invalidItemIDProvider")]
+    public void ModifyItemStatisticDeltaValue_InvalidID_Throws(string itemID)
+    {
+        ItemManager manager = new ItemManager(catalog);
+        Assert.That(
+            () => { manager.ModifyItemStatisticDeltaValue(itemID, Statistic.Weight, 50); },
+            Throws.TypeOf<KeyNotFoundException>()
+        );
     }
 }

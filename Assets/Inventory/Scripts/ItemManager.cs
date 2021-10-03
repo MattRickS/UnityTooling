@@ -45,62 +45,60 @@ namespace Inventory
 
         public int NumModifiedItems() { return modifiedItems.Count; }
         public int NumStaticItems() { return catalog.NumItems(); }
-        public bool IsValidID(string id)
-        {
-            return IsStaticItemID(id) || IsModifiedItemID(id);
-        }
-        public bool IsModifiedItemID(string id) { return !string.IsNullOrEmpty(id) && modifiedItemMapping.ContainsKey(id); }
-        public bool IsStaticItemID(string id) { return catalog.IsValidID(id); }
+        public bool IsValidID(string itemID) { return IsStaticItemID(itemID) || IsModifiedItemID(itemID); }
+        public bool IsModifiedItemID(string itemID) { return !string.IsNullOrEmpty(itemID) && modifiedItemMapping.ContainsKey(itemID); }
+        public bool IsStaticItemID(string itemID) { return catalog.IsValidID(itemID); }
 
         // Item Data
         /*
         Retrieves the ItemData for a given ID, which may be an itemID or modifiedItemID
         */
-        public ItemData GetItemData(string id)
+        public ItemData GetItemData(string itemID)
         {
-            if (string.IsNullOrEmpty(id)) { return null; }
+            if (string.IsNullOrEmpty(itemID)) { return null; }
             ModifiedItem modifiedItem;
-            if (modifiedItemMapping.TryGetValue(id, out modifiedItem))
+            if (modifiedItemMapping.TryGetValue(itemID, out modifiedItem))
             {
-                id = modifiedItem.itemID;
+                itemID = modifiedItem.itemID;
             }
-            return catalog.GetItemData(id);
+            return catalog.GetItemData(itemID);
         }
         /*
         Retrieves the statistic value for the ID. If the ID belongs to a modified item,
         it combines the data and delta value.
         */
-        public int GetItemStatisticValue(string id, Statistic stat)
+        public int GetItemStatisticValue(string itemID, Statistic stat)
         {
-            if (!IsValidID(id)) { throw new KeyNotFoundException($"{id} is not a an existing id"); }
+            if (!IsValidID(itemID)) { throw new KeyNotFoundException($"{itemID} is not a an existing id"); }
             ModifiedItem modItem;
             int value = 0;
-            if (modifiedItemMapping.TryGetValue(id, out modItem))
+            if (modifiedItemMapping.TryGetValue(itemID, out modItem))
             {
-                id = modItem.itemID;
+                itemID = modItem.itemID;
                 value += modItem.GetStatDelta(stat);
             }
-            ItemData data = GetItemData(id);
+            ItemData data = GetItemData(itemID);
             value += data.GetStat(stat);
             return value;
         }
         /*
         Retrieves the statistic's modified value for the ID. Defaults to 0.
         */
-        public int GetItemStatisticDeltaValue(string id, Statistic stat)
+        public int GetItemStatisticDeltaValue(string itemID, Statistic stat)
         {
-            if (!IsModifiedItemID(id)) { throw new KeyNotFoundException(); }
+            if (!IsModifiedItemID(itemID)) { throw new KeyNotFoundException($"{itemID} is not a modified id"); }
             ModifiedItem modItem;
-            if (modifiedItemMapping.TryGetValue(id, out modItem))
+            if (modifiedItemMapping.TryGetValue(itemID, out modItem))
             {
-                id = modItem.itemID;
+                itemID = modItem.itemID;
                 return modItem.GetStatDelta(stat);
             }
             return 0;
         }
 
         /*
-        Creates a new modified item instance to be tracked by the inventory.
+        Creates a new modified item instance from a static itemID.
+        Throws a KeyNotFoundException if the itemID is not an existing static ID.
         The returned ModifiedItem has no stat deltas when returned.
         */
         public string CreateModifiedItemID(string itemID, string newItemID = null)
@@ -108,14 +106,16 @@ namespace Inventory
             return CreateModifiedItem(itemID, newItemID).Id();
         }
         /*
-        Sets the delta value for an itemID. If the given itemID was not currently a
-        tracked instance, a new instance is created and the ID returned.
+        Sets the delta value for an itemID. If the given itemID is a static itemID,
+        a new modified instance is created. Returns the itemID of the modified instance.
         */
         public string SetItemStatisticDeltaValue(string itemID, Statistic statistic, int value)
         {
+            if (string.IsNullOrEmpty(itemID)) { throw new KeyNotFoundException($"{itemID} is not a valid ID"); }
             ModifiedItem modItem;
             if (!modifiedItemMapping.TryGetValue(itemID, out modItem))
             {
+                // Throws if not a valid static ID
                 modItem = CreateModifiedItem(itemID);
             }
             modItem.SetStatDelta(statistic, value);
@@ -129,11 +129,8 @@ namespace Inventory
         */
         public int ModifyItemStatisticDeltaValue(string itemID, Statistic statistic, int modifier)
         {
-            ModifiedItem modItem;
-            if (!modifiedItemMapping.TryGetValue(itemID, out modItem))
-            {
-                throw new KeyNotFoundException();
-            }
+            if (!IsModifiedItemID(itemID)) { throw new KeyNotFoundException($"{itemID} is not a modified id"); }
+            ModifiedItem modItem = modifiedItemMapping[itemID];
             return modItem.ModifyStatDelta(statistic, modifier);
         }
 
