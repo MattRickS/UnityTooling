@@ -200,48 +200,70 @@ namespace Inventory
             // Check if adding a modified item and determine the ItemData ID
             bool isModifiedItem = itemManager.IsModifiedItemID(itemID);
             string itemDataID = itemID;
+            ItemData itemData = itemManager.GetItemData(itemID);
             if (isModifiedItem)
             {
                 if (quantity > 1)
                 {
                     throw new Exception($"Cannot add multiples ({quantity}) of modifiedItems");
                 }
-                itemDataID = itemManager.GetItemData(itemID).Id();
+                itemDataID = itemData.Id();
             }
 
-            // TODO: Populate stacks first
             int remaining = quantity;
-            int maxStackSize = itemManager.GetItemData(itemID).maxStackSize;
-            Slot slot;
-            int n;
-            for (int currIndex = 0; currIndex < NumSlots(); currIndex++)
+            if (!itemData.IsStackable())
             {
-                if (IsEmpty(currIndex))
+                // Non-stackable items just fill up the first empty slots
+                foreach (Slot slot in slots)
                 {
-                    n = Math.Min(quantity, maxStackSize);
-                    slot = slots[currIndex];
-                    slot.itemID = itemDataID;
-                    slot.quantity = n;
-                    remaining -= n;
-                    if (isModifiedItem)
+                    if (slot.IsEmpty())
                     {
-                        slot.instanceIDs.Add(itemID);
+                        slot.itemID = itemDataID;
+                        slot.quantity = 1;
+                        if (isModifiedItem)
+                            slot.instanceIDs.Add(itemID);
+                        remaining -= 1;
+                        if (remaining <= 0)
+                            return quantity;
                     }
                 }
-                else if (HasItem(currIndex, itemID) && !IsFull(currIndex))
+            }
+            else
+            {
+                List<Slot> emptySlots = new List<Slot>();
+                foreach (Slot slot in slots)
                 {
-                    n = Math.Min(quantity, maxStackSize - StackSize(currIndex));
-                    slot = slots[currIndex];
-                    slot.quantity += n;
-                    remaining -= n;
-                    if (isModifiedItem)
+                    // Track empty slots in case existing stacks lack enough capacity
+                    if (slot.IsEmpty())
+                        emptySlots.Add(slot);
+                    // Fill existing stacks
+                    else if (slot.itemID == itemDataID && slot.quantity < itemData.maxStackSize)
                     {
-                        slot.instanceIDs.Add(itemID);
+                        int toAdd = Math.Min(remaining, itemData.maxStackSize - slot.quantity);
+                        slot.itemID = itemDataID;
+                        slot.quantity += toAdd;
+                        if (isModifiedItem)
+                            slot.instanceIDs.Add(itemID);
+                        remaining -= toAdd;
+                        if (remaining == 0)
+                            return quantity;
                     }
                 }
 
-                if (remaining == 0) { break; }
+                // Now that stack's are maxed out, fill up empty spaces;
+                foreach (Slot slot in emptySlots)
+                {
+                    int toAdd = Math.Min(remaining, itemData.maxStackSize);
+                    slot.itemID = itemDataID;
+                    slot.quantity += toAdd;
+                    if (isModifiedItem)
+                        slot.instanceIDs.Add(itemID);
+                    remaining -= toAdd;
+                    if (remaining == 0)
+                        return quantity;
+                }
             }
+
             return quantity - remaining;
         }
         /*

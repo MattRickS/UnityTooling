@@ -11,7 +11,7 @@ namespace Inventory
 
         public string itemID = NO_ITEM;
         public int quantity = 0;
-        public List<string> instanceIDs;
+        public List<string> instanceIDs = new List<string>();
 
         public bool IsEmpty() { return quantity == 0; }
         public bool IsStacked() { return quantity > 0; }

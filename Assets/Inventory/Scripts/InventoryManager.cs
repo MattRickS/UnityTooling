@@ -27,6 +27,11 @@ namespace Inventory
 
         public ItemManager ItemManager { get { return itemManager; } }
 
+        private Inventory GetInventoryByID(string inventoryID)
+        {
+            return inventoryMapping[inventoryID];
+        }
+
         // Inventories
         public string CreateInventory(uint size)
         {
@@ -44,13 +49,18 @@ namespace Inventory
         // Item Manipulation
         public bool HasCapacity(string inventoryID, string itemID, int quantity = 1)
         {
-            Inventory inventory = inventoryMapping[inventoryID];
+            Inventory inventory = GetInventoryByID(inventoryID);
             return inventory.HasCapacity(itemID, quantity);
         }
         public bool HasCapacity(string inventoryID, Dictionary<string, int> itemQuantities)
         {
-            Inventory inventory = inventoryMapping[inventoryID];
+            Inventory inventory = GetInventoryByID(inventoryID);
             return inventory.HasCapacity(itemQuantities);
+        }
+        public int AddItemToInventory(string inventoryID, string itemID, int quantity = 1)
+        {
+            Inventory inventory = GetInventoryByID(inventoryID);
+            return inventory.AddItem(itemID, quantity: quantity);
         }
 
         // Serialization

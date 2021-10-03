@@ -24,11 +24,38 @@ public class InventoryManagerTest : ItemTestHarness
     [TestCase(healthPotionID, 100, ExpectedResult = true)]  // Stack size of 10
     [TestCase(swordItemID, 11, ExpectedResult = false)]
     [TestCase(healthPotionID, 101, ExpectedResult = false)]
-    public bool HasCapacity_ValidItemHasCapacity_Result(string itemID, int quantity)
+    public bool HasCapacity_ValidItemHasCapacity_MatchesResult(string itemID, int quantity)
     {
         InventoryManager manager = new InventoryManager(sharedItemManager);
         string inventoryID = manager.CreateInventory(10);
         return manager.HasCapacity(inventoryID, itemID, quantity: quantity);
+    }
+
+    [TestCase(shieldItemID, 1, ExpectedResult = 1)]
+    [TestCase(modifiedSwordItemID, 1, ExpectedResult = 1)]  // Modified items work
+    [TestCase(swordItemID, 10, ExpectedResult = 10)]  // Max Capacity for unstacked
+    [TestCase(healthPotionID, 100, ExpectedResult = 100)]  // Stack size of 10
+    [TestCase(swordItemID, 11, ExpectedResult = 10)]
+    [TestCase(healthPotionID, 101, ExpectedResult = 100)]
+    public int AddItemToInventory_ValidItemEmpty_MatchesResult(string itemID, int quantity)
+    {
+        InventoryManager manager = new InventoryManager(sharedItemManager);
+        string inventoryID = manager.CreateInventory(10);
+        return manager.AddItemToInventory(inventoryID, itemID, quantity: quantity);
+    }
+
+    [TestCase(shieldItemID, 1, ExpectedResult = 1)]
+    [TestCase(modifiedSwordItemID, 1, ExpectedResult = 1)]
+    [TestCase(swordItemID, 10, ExpectedResult = 1)]
+    [TestCase(healthPotionID, 15, ExpectedResult = 15)]
+    [TestCase(healthPotionID, 16, ExpectedResult = 15)]
+    public int AddItemToInventory_ValidItemPartialFull_MatchesResult(string itemID, int quantity)
+    {
+        InventoryManager manager = new InventoryManager(sharedItemManager);
+        string inventoryID = manager.CreateInventory(3);
+        manager.AddItemToInventory(inventoryID, healthPotionID, 5);
+        manager.AddItemToInventory(inventoryID, swordItemID);
+        return manager.AddItemToInventory(inventoryID, itemID, quantity: quantity);
     }
 
     public static IEnumerable<Dictionary<string, int>> itemBundleProviderA()
