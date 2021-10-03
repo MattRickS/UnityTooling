@@ -78,9 +78,9 @@ public class ItemManagerTest : ItemTestHarness
     {
         // Modified items shouldn't increment the static item count
         ItemManager manager = new ItemManager(catalog);
-        Assert.That(manager.NumStaticItems(), Is.EqualTo(2));
+        Assert.That(manager.NumStaticItems(), Is.EqualTo(3));
         manager.CreateModifiedItemID(swordItemID);
-        Assert.That(manager.NumStaticItems(), Is.EqualTo(2));
+        Assert.That(manager.NumStaticItems(), Is.EqualTo(3));
     }
 
     [Test]
@@ -88,6 +88,7 @@ public class ItemManagerTest : ItemTestHarness
     {
         Assert.That(sharedItemManager.GetItemData(shieldItemID), Is.EqualTo(item_shield));
         Assert.That(sharedItemManager.GetItemData(swordItemID), Is.EqualTo(item_sword));
+        // Modified items should return their base item's data
         Assert.That(sharedItemManager.GetItemData(modifiedSwordItemID), Is.EqualTo(item_sword));
     }
 

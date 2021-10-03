@@ -8,22 +8,25 @@ public class ItemTestHarness
 {
     public ItemData item_shield;
     public ItemData item_sword;
+    public ItemData item_healthPotion;
     public Catalog catalog;
     public ItemManager sharedItemManager;
     public const string shieldItemID = "Armour.shield";
     public const string swordItemID = "Weapon.sword";
+    public const string healthPotionID = "Miscellaneous.healthPotion";
     public const string modifiedSwordItemID = "MyCustomItemID";
 
     public static IEnumerable<string> validStaticItemIDProvider()
     {
         yield return shieldItemID;
         yield return swordItemID;
+        yield return healthPotionID;
     }
 
     public static IEnumerable<string> validMixedItemIDProvider()
     {
-        yield return shieldItemID;
-        yield return swordItemID;
+        foreach (string itemID in validStaticItemIDProvider())
+            yield return itemID;
         yield return modifiedSwordItemID;
     }
 
@@ -74,9 +77,15 @@ public class ItemTestHarness
             {Statistic.Weight, 10},
             {Statistic.Attack, 3},
         });
+        item_healthPotion = ItemTestHarness.CreateItemData("healthPotion", Category.Miscellaneous, "Heals Wounds", new Dictionary<Statistic, int>() {
+            {Statistic.Value, 20},
+            {Statistic.Weight, 1},
+            {Statistic.HealthRestore, 3},
+        },
+        maxStackSize: 10, isConsumable: true);
 
         catalog = Catalog.Create(
-            new List<ItemData>() { item_shield, item_sword }
+            new List<ItemData>() { item_shield, item_sword, item_healthPotion }
         );
         sharedItemManager = new ItemManager(catalog);
         sharedItemManager.CreateModifiedItemID(swordItemID, modifiedSwordItemID);

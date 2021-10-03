@@ -23,15 +23,29 @@ namespace Inventory
 
         public List<Inventory> inventories = new List<Inventory>();
 
+        public InventoryManager() { }
+        public InventoryManager(ItemManager itemManager) { this.itemManager = itemManager; }
+
         // Inventories
-        public Inventory CreateInventory(int size)
+        public string CreateInventory(uint size)
         {
             Inventory inventory = new Inventory(itemManager, size);
             inventories.Add(inventory);
             inventoryMapping.Add(inventory.Id(), inventory);
-            return inventory;
+            return inventory.Id();
         }
-        public Inventory GetInventory(string inventoryID) { return inventoryMapping[inventoryID]; }
+        public bool IsValidInventoryID(string inventoryID)
+        {
+            return !string.IsNullOrEmpty(inventoryID) && inventoryMapping.ContainsKey(inventoryID);
+        }
+        public int NumInventories() { return inventories.Count; }
+
+        // Item Manipulation
+        public bool HasCapacity(string inventoryID, string itemID, int quantity = 1)
+        {
+            Inventory inventory = inventoryMapping[inventoryID];
+            return inventory.HasCapacity(itemID, quantity);
+        }
 
         // Serialization
         public void OnBeforeSerialize() { }

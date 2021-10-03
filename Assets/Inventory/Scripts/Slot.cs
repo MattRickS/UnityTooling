@@ -13,6 +13,11 @@ namespace Inventory
         public int quantity = 0;
         public List<string> instanceIDs;
 
+        public bool IsEmpty() { return quantity == 0; }
+        public bool IsStacked() { return quantity > 0; }
+        public bool HasModifiedItem() { return instanceIDs.Count > 0; }
+        public bool HasItem() { return itemID != NO_ITEM; }
+        public bool HasItem(string itemID) { return this.itemID == itemID || instanceIDs.Contains(itemID); }
     }
 
 }

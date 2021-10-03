@@ -5,13 +5,21 @@ using Inventory;
 public class CatalogTest : ItemTestHarness
 {
     [Test]
-    public void GetItemData_ValidID_FindsItem()
+    public void GetItemData_StaticID_FindsItem()
     {
         ItemData item = catalog.GetItemData(shieldItemID);
         Assert.That(item, Is.EqualTo(item_shield));
 
         item = catalog.GetItemData(swordItemID);
         Assert.That(item, Is.EqualTo(item_sword));
+    }
+
+    [Test]
+    public void GetItemData_ModifiedID_ReturnsNull()
+    {
+        // Catalog is unaware of modified items
+        ItemData item = catalog.GetItemData(modifiedSwordItemID);
+        Assert.That(item, Is.Null);
     }
 
     [TestCaseSource("invalidItemIDProvider")]

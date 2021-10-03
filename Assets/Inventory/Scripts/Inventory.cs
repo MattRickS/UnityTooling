@@ -13,6 +13,8 @@ namespace Inventory
     [Serializable]
     public class Inventory
     {
+        public string inventoryID = System.Guid.NewGuid().ToString();
+
         // For now, dependency inject the manager and InventoryManager serialisation
         // ensures all inventories use a shared instance. Should look at making this
         // private and see if there are better serialization options.
@@ -20,13 +22,12 @@ namespace Inventory
         [SerializeField] private List<Slot> slots;
 
         private ItemData GetItemData(int index) { return itemManager.GetItemData(slots[index].itemID); }
+        private ItemData GetItemData(string itemID) { return itemManager.GetItemData(itemID); }
 
-        public string inventoryID = System.Guid.NewGuid().ToString();
-
-        public Inventory(ItemManager itemManager, int size)
+        public Inventory(ItemManager itemManager, uint size)
         {
             this.itemManager = itemManager;
-            slots = new List<Slot>(size);
+            slots = new List<Slot>();
             for (int i = 0; i < size; i++)
             {
                 slots.Add(new Slot());
@@ -46,6 +47,21 @@ namespace Inventory
         public bool IsEmpty(int index) { return slots[index].itemID == Slot.NO_ITEM; }
         public bool IsFull(int index) { return StackSize(index) == MaxStackSize(index); }
         public bool HasItem(int index, string itemID) { return slots[index].itemID == itemID; }
+        public bool HasCapacity(string itemID, int quantity = 1)
+        {
+            int maxStackSize = GetItemData(itemID).maxStackSize;
+            int quantityPlaceable = 0;
+            foreach (Slot slot in slots)
+            {
+                if (slot.IsEmpty() || (slot.HasItem(itemID) && slot.quantity < maxStackSize))
+                {
+                    quantityPlaceable += (maxStackSize - slot.quantity);
+                    if (quantityPlaceable >= quantity)
+                        return true;
+                }
+            }
+            return false;
+        }
 
         // Statistics
         public int SlotStatistic(int index, Statistic stat)
