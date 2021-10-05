@@ -47,6 +47,11 @@ namespace Inventory
         public int NumInventories() { return inventories.Count; }
 
         // Item Manipulation
+        public Dictionary<string, int> GetInventoryItems(string inventoryID)
+        {
+            Inventory inventory = GetInventoryByID(inventoryID);
+            return inventory.Items();
+        }
         public bool HasCapacity(string inventoryID, string itemID, int quantity = 1)
         {
             Inventory inventory = GetInventoryByID(inventoryID);
@@ -62,7 +67,11 @@ namespace Inventory
             Inventory inventory = GetInventoryByID(inventoryID);
             return inventory.AddItem(itemID, quantity: quantity);
         }
-
+        public Dictionary<string, int> AddItemsToInventory(string inventoryID, Dictionary<string, int> itemQuantities)
+        {
+            Inventory inventory = GetInventoryByID(inventoryID);
+            return inventory.AddItems(itemQuantities);
+        }
         // Serialization
         public void OnBeforeSerialize() { }
         public void OnAfterDeserialize()

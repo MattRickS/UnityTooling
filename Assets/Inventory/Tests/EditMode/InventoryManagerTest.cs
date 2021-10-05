@@ -31,12 +31,12 @@ public class InventoryManagerTest : ItemTestHarness
         return manager.HasCapacity(inventoryID, itemID, quantity: quantity);
     }
 
-    [TestCase(shieldItemID, 1, ExpectedResult = 1)]
-    [TestCase(modifiedSwordItemID, 1, ExpectedResult = 1)]  // Modified items work
-    [TestCase(swordItemID, 10, ExpectedResult = 10)]  // Max Capacity for unstacked
-    [TestCase(healthPotionID, 100, ExpectedResult = 100)]  // Stack size of 10
-    [TestCase(swordItemID, 11, ExpectedResult = 10)]
-    [TestCase(healthPotionID, 101, ExpectedResult = 100)]
+    [TestCase(shieldItemID, 1, ExpectedResult = 0)]
+    [TestCase(modifiedSwordItemID, 1, ExpectedResult = 0)]  // Modified items work
+    [TestCase(swordItemID, 10, ExpectedResult = 0)]  // Max Capacity for unstacked
+    [TestCase(healthPotionID, 100, ExpectedResult = 0)]  // Stack size of 10
+    [TestCase(swordItemID, 11, ExpectedResult = 1)]
+    [TestCase(healthPotionID, 101, ExpectedResult = 1)]
     public int AddItemToInventory_ValidItemEmpty_MatchesResult(string itemID, int quantity)
     {
         InventoryManager manager = new InventoryManager(sharedItemManager);
@@ -44,11 +44,14 @@ public class InventoryManagerTest : ItemTestHarness
         return manager.AddItemToInventory(inventoryID, itemID, quantity: quantity);
     }
 
-    [TestCase(shieldItemID, 1, ExpectedResult = 1)]
-    [TestCase(modifiedSwordItemID, 1, ExpectedResult = 1)]
-    [TestCase(swordItemID, 10, ExpectedResult = 1)]
-    [TestCase(healthPotionID, 15, ExpectedResult = 15)]
-    [TestCase(healthPotionID, 16, ExpectedResult = 15)]
+    // TODO: Tests for
+    //  * Modified stackable item should stack fine
+    //  * Resulting items should be correct
+    [TestCase(shieldItemID, 1, ExpectedResult = 0)]
+    [TestCase(modifiedSwordItemID, 1, ExpectedResult = 0)]
+    [TestCase(swordItemID, 10, ExpectedResult = 9)]
+    [TestCase(healthPotionID, 15, ExpectedResult = 0)]
+    [TestCase(healthPotionID, 16, ExpectedResult = 1)]
     public int AddItemToInventory_ValidItemPartialFull_MatchesResult(string itemID, int quantity)
     {
         InventoryManager manager = new InventoryManager(sharedItemManager);
@@ -56,6 +59,14 @@ public class InventoryManagerTest : ItemTestHarness
         manager.AddItemToInventory(inventoryID, healthPotionID, 5);
         manager.AddItemToInventory(inventoryID, swordItemID);
         return manager.AddItemToInventory(inventoryID, itemID, quantity: quantity);
+    }
+
+    [Test]
+    public void GetInventoryItems_Empty_EmptyDict()
+    {
+        InventoryManager manager = new InventoryManager(sharedItemManager);
+        string inventoryID = manager.CreateInventory(3);
+        Assert.That(manager.GetInventoryItems(inventoryID), Is.EqualTo(new Dictionary<string, int>()));
     }
 
     public static IEnumerable<Dictionary<string, int>> itemBundleProviderA()
@@ -74,6 +85,15 @@ public class InventoryManagerTest : ItemTestHarness
         yield return new Dictionary<string, int>() { { shieldItemID, 1 }, { swordItemID, 1 }, { healthPotionID, 11 } };
         yield return new Dictionary<string, int>() { { shieldItemID, 1 }, { healthPotionID, 21 } };
         yield return new Dictionary<string, int>() { { shieldItemID, 1 }, { swordItemID, 1 }, { modifiedSwordItemID, 1 }, { healthPotionID, 1 } };
+    }
+
+    [TestCaseSource("itemBundleProviderA")]
+    public void GetInventoryItems_Items_Matches(Dictionary<string, int> itemQuantities)
+    {
+        InventoryManager manager = new InventoryManager(sharedItemManager);
+        string inventoryID = manager.CreateInventory(3);
+        manager.AddItemsToInventory(inventoryID, itemQuantities);
+        Assert.That(manager.GetInventoryItems(inventoryID), Is.EqualTo(itemQuantities));
     }
 
     // TODO: Add cases with existing items in inventory
