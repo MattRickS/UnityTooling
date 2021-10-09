@@ -192,6 +192,46 @@ namespace Inventory
             }
             return false;
         }
+        public bool HasItems(Dictionary<string, int> itemQuantities)
+        {
+            if (itemQuantities.Count == 0)
+                return true;
+
+            Dictionary<string, int> remainingItems = new Dictionary<string, int>(itemQuantities);
+            int value;
+
+            void removeFoundQuantity(string itemID, int quantity, int requiredValue)
+            {
+                if (requiredValue > quantity)
+                    remainingItems[itemID] -= quantity;
+                else
+                    remainingItems.Remove(itemID);
+            }
+
+            foreach (Slot slot in slots)
+            {
+                if (slot.IsEmpty())
+                    continue;
+
+                int quantity = slot.quantity;
+                foreach (var modifiedItemID in slot.instanceIDs)
+                {
+                    if (remainingItems.TryGetValue(modifiedItemID, out value))
+                    {
+                        removeFoundQuantity(modifiedItemID, 1, value);
+                        quantity -= 1;
+                    }
+                }
+
+                if (remainingItems.TryGetValue(slot.itemID, out value))
+                    removeFoundQuantity(slot.itemID, slot.quantity, value);
+
+                if (remainingItems.Count == 0)
+                    return true;
+            }
+
+            return false;
+        }
 
         // Statistics
         public int SlotStatistic(int index, Statistic stat)

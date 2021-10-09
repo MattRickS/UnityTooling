@@ -74,11 +74,11 @@ namespace Inventory
             Inventory inventory = GetInventoryByID(inventoryID);
             return inventory.HasItem(itemID, quantity);
         }
-        // public bool HasItems(string inventoryID, Dictionary<string, int> itemQuantities)
-        // {
-        //     Inventory inventory = GetInventoryByID(inventoryID);
-        //     return inventory.HasItems(itemQuantities);
-        // }
+        public bool HasItems(string inventoryID, Dictionary<string, int> itemQuantities)
+        {
+            Inventory inventory = GetInventoryByID(inventoryID);
+            return inventory.HasItems(itemQuantities);
+        }
 
         // Write State
         public void ClearInventory(string inventoryID)

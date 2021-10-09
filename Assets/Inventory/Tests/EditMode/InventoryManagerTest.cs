@@ -88,6 +88,35 @@ public class InventoryManagerTest : ItemTestHarness
     }
 
     [TestCaseSource("itemBundleProviderA")]
+    public void HasItems_Items_True(Dictionary<string, int> itemQuantities)
+    {
+        InventoryManager manager = new InventoryManager(sharedItemManager);
+        string inventoryID = manager.CreateInventory(3);
+        manager.AddItemsToInventory(inventoryID, itemQuantities);
+
+        Assert.That(manager.HasItems(inventoryID, itemQuantities), Is.True);
+    }
+
+    [TestCaseSource("itemBundleProviderA")]
+    public void HasItems_Items_False(Dictionary<string, int> itemQuantities)
+    {
+        InventoryManager manager = new InventoryManager(sharedItemManager);
+        string inventoryID = manager.CreateInventory(3);
+        manager.AddItemsToInventory(inventoryID, itemQuantities);
+
+        Dictionary<string, int> hasItems = new Dictionary<string, int>(itemQuantities);
+        var enumerator = hasItems.GetEnumerator();
+        // Empty dict will always be true, skip it
+        if (!enumerator.MoveNext())
+            return;
+
+        // Increment one of the required items by 1 to exceed the inventory content
+        hasItems[enumerator.Current.Key] += 1;
+        Assert.That(manager.HasItems(inventoryID, itemQuantities), Is.True);
+    }
+
+
+    [TestCaseSource("itemBundleProviderA")]
     public void GetInventoryItems_Items_Matches(Dictionary<string, int> itemQuantities)
     {
         InventoryManager manager = new InventoryManager(sharedItemManager);
