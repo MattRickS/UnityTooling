@@ -14,6 +14,7 @@ public class ItemTestHarness
     public const string shieldItemID = "Armour.shield";
     public const string swordItemID = "Weapon.sword";
     public const string healthPotionID = "Miscellaneous.healthPotion";
+    public const string manaPotionID = "Miscellaneous.manaPotion";
     public const string modifiedSwordItemID = "MyCustomItemID";
 
     public static IEnumerable<string> validStaticItemIDProvider()

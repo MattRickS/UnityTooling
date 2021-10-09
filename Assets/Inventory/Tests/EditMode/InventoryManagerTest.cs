@@ -112,4 +112,27 @@ public class InventoryManagerTest : ItemTestHarness
         string inventoryID = manager.CreateInventory(3);
         Assert.That(manager.HasCapacity(inventoryID, itemQuantities), Is.False);
     }
+
+    [TestCase(shieldItemID, 0, true, 0)]
+    [TestCase(shieldItemID, 1, false, -1)]
+    [TestCase(modifiedSwordItemID, 0, true, 1)]
+    [TestCase(modifiedSwordItemID, 2, false, -1)]
+    [TestCase(healthPotionID, 0, true, 2)]
+    [TestCase(healthPotionID, 3, true, 4)]
+    [TestCase(manaPotionID, 0, false, -1)]
+    public void FindItem_Default_MatchesResult(string itemID, int startIndex, bool found, int expectedIndex)
+    {
+        InventoryManager manager = new InventoryManager(sharedItemManager);
+        string inventoryID = manager.CreateInventory(6);
+        manager.AddItemToInventory(inventoryID, shieldItemID);
+        manager.AddItemToInventory(inventoryID, modifiedSwordItemID);
+        manager.AddItemToInventory(inventoryID, healthPotionID, quantity: 10);
+        manager.AddItemToInventory(inventoryID, swordItemID);
+        manager.AddItemToInventory(inventoryID, healthPotionID, quantity: 3);
+
+        int index;
+        bool result = manager.FindItem(inventoryID, itemID, out index, startIndex: startIndex);
+        Assert.That(result, Is.EqualTo(found));
+        Assert.That(index, Is.EqualTo(expectedIndex));
+    }
 }

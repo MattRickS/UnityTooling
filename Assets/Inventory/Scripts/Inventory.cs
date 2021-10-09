@@ -166,6 +166,19 @@ namespace Inventory
             }
             return items;
         }
+        public bool FindItem(string itemID, out int index, int startIndex = 0)
+        {
+            for (int i = startIndex; i < slots.Count; i++)
+            {
+                if (slots[i].HasExactItemID(itemID))
+                {
+                    index = i;
+                    return true;
+                }
+            }
+            index = -1;
+            return false;
+        }
 
         // Statistics
         public int SlotStatistic(int index, Statistic stat)

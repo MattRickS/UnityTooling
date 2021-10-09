@@ -52,11 +52,11 @@ namespace Inventory
             Inventory inventory = GetInventoryByID(inventoryID);
             return inventory.Items();
         }
-        // public bool FindItem(string inventoryID, string itemID, out int index, int startIndex=0)
-        // {
-        //     Inventory inventory = GetInventoryByID(inventoryID);
-        //     return inventory.FindItem(itemID, out index, startIndex: startIndex);
-        // }
+        public bool FindItem(string inventoryID, string itemID, out int index, int startIndex = 0)
+        {
+            Inventory inventory = GetInventoryByID(inventoryID);
+            return inventory.FindItem(itemID, out index, startIndex: startIndex);
+        }
         public bool HasCapacity(string inventoryID, string itemID, int quantity = 1)
         {
             Inventory inventory = GetInventoryByID(inventoryID);
