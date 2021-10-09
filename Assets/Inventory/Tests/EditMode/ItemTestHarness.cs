@@ -49,18 +49,9 @@ public class ItemTestHarness
     )
     {
         ItemData item = ScriptableObject.CreateInstance<ItemData>();
-        item.itemName = name;
-        item.category = category;
-        item.description = description;
-        item.maxStackSize = maxStackSize;
-        item.isConsumable = isConsumable;
-        if (stats != null)
-        {
-            foreach (var pair in stats)
-            {
-                item.statistics.Add(pair.Key, pair.Value);
-            }
-        }
+        item.Init(
+            name, category, maxStackSize: maxStackSize, isConsumable: isConsumable, description: description, statistics: stats
+        );
         return item;
     }
 

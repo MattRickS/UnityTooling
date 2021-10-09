@@ -58,6 +58,8 @@ namespace Inventory
             }
             return catalog.GetItemData(itemID);
         }
+        /// <summary>Convenience method for the maxStackSize of an item</summary>
+        public int MaxStackSize(string itemID) { return GetItemData(itemID).MaxStackSize; }
         /// <summary>Retrieves the statistic value for the ID. If the ID belongs to a
         /// <see cref="ModifiedItem"/>, it combines the data and delta value.</summary>
         public int GetItemStatisticValue(string itemID, Statistic stat)
@@ -71,7 +73,7 @@ namespace Inventory
                 value += modItem.GetStatDelta(stat);
             }
             ItemData data = GetItemData(itemID);
-            value += data.GetStat(stat);
+            value += data.Statistic(stat);
             return value;
         }
         /// <summary>Retrieves the statistic's delta value for the <see cref="ModifiedItem"/>.

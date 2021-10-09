@@ -41,7 +41,7 @@ namespace Inventory
 
         // Stacking
         public int StackSize(int index) { return slots[index].quantity; }
-        public int MaxStackSize(int index) { return GetItemData(index).maxStackSize; }
+        public int MaxStackSize(int index) { return GetItemData(index).MaxStackSize; }
         public bool IsStackable(int index) { return MaxStackSize(index) > 1; }
 
         // State
@@ -50,7 +50,7 @@ namespace Inventory
         public bool HasExactItemID(int index, string itemID) { return slots[index].HasExactItemID(itemID); }
         public bool HasCapacity(string itemID, int quantity = 1)
         {
-            int maxStackSize = GetItemData(itemID).maxStackSize;
+            int maxStackSize = GetItemData(itemID).MaxStackSize;
             int quantityPlaceable = 0;
             foreach (Slot slot in slots)
             {
@@ -85,11 +85,11 @@ namespace Inventory
                     remainingItemQuantities.Remove(itemID);
                 }
 
-                maxStackSizes[trueItemID] = itemData.maxStackSize;
+                maxStackSizes[trueItemID] = itemData.MaxStackSize;
                 // Avoid adding the key multiple times for modified and base items
-                if (itemData.maxStackSize > 1 && !stackableItems.Contains(trueItemID))
+                if (itemData.MaxStackSize > 1 && !stackableItems.Contains(trueItemID))
                     stackableItems.Add(trueItemID);
-                else if ((itemData.maxStackSize == 1 && !nonStackableItems.Contains(trueItemID)))
+                else if ((itemData.MaxStackSize == 1 && !nonStackableItems.Contains(trueItemID)))
                     nonStackableItems.Add(trueItemID);
             }
 
@@ -263,9 +263,9 @@ namespace Inventory
                     if (slot.IsEmpty())
                         emptySlots.Add(slot);
                     // Fill existing stacks
-                    else if (slot.itemID == itemDataID && slot.quantity < itemData.maxStackSize)
+                    else if (slot.itemID == itemDataID && slot.quantity < itemData.MaxStackSize)
                     {
-                        int toAdd = Math.Min(remaining, itemData.maxStackSize - slot.quantity);
+                        int toAdd = Math.Min(remaining, itemData.MaxStackSize - slot.quantity);
                         if (AddToSlot(slot, toAdd))
                             return remaining;
                     }
@@ -274,7 +274,7 @@ namespace Inventory
                 // Now that stack's are maxed out, fill up empty spaces;
                 foreach (Slot slot in emptySlots)
                 {
-                    int toAdd = Math.Min(remaining, itemData.maxStackSize);
+                    int toAdd = Math.Min(remaining, itemData.MaxStackSize);
                     if (AddToSlot(slot, toAdd))
                         return remaining;
                 }
@@ -323,11 +323,11 @@ namespace Inventory
                     remainingItemQuantities.Remove(itemID);
                 }
 
-                maxStackSizes[baseItemID] = itemData.maxStackSize;
+                maxStackSizes[baseItemID] = itemData.MaxStackSize;
                 // Avoid adding the key multiple times for modified and base items
-                if (itemData.maxStackSize > 1 && !stackableItems.Contains(baseItemID))
+                if (itemData.MaxStackSize > 1 && !stackableItems.Contains(baseItemID))
                     stackableItems.Add(baseItemID);
-                else if ((itemData.maxStackSize == 1 && !nonStackableItems.Contains(baseItemID)))
+                else if ((itemData.MaxStackSize == 1 && !nonStackableItems.Contains(baseItemID)))
                     nonStackableItems.Add(baseItemID);
             }
 

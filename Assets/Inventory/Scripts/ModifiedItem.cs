@@ -8,7 +8,7 @@ namespace Inventory
     top of the ItemData, eg:
         data = ItemData(itemID, statistics={Attack: 10})
         modifiedItem = ModifiedItem(itemID, statistics={Attack: -1})
-        value = data.GetStat(Attack) + modifiedItem.GetStatDelta(Attack)
+        value = data.Statistic(Attack) + modifiedItem.GetStatDelta(Attack)
     This is the same value retrieved from:
         ItemManager.GetItemStatistic(modifiedItemID)
     */
