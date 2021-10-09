@@ -45,9 +45,9 @@ namespace Inventory
         public bool IsStackable(int index) { return MaxStackSize(index) > 1; }
 
         // State
-        public bool IsEmpty(int index) { return slots[index].itemID == Slot.NO_ITEM; }
+        public bool IsEmpty(int index) { return slots[index].IsEmpty(); }
         public bool IsFull(int index) { return StackSize(index) == MaxStackSize(index); }
-        public bool HasItem(int index, string itemID) { return slots[index].itemID == itemID; }
+        public bool HasExactItemID(int index, string itemID) { return slots[index].HasExactItemID(itemID); }
         public bool HasCapacity(string itemID, int quantity = 1)
         {
             int maxStackSize = GetItemData(itemID).maxStackSize;
@@ -415,6 +415,12 @@ namespace Inventory
 
             return remainingItemQuantities;
         }
+        /// <summary>Removes all items</summary>
+        public void Clear()
+        {
+            foreach (Slot slot in slots)
+                slot.Clear();
+        }
         /*
         Removes up to `quantity` occurrences of the item as possible starting
         from the back of the Inventory. Returns the quantity that was removed
@@ -441,8 +447,8 @@ namespace Inventory
             {
                 if (
                     IsEmpty(currIndex) || !(
-                        (isModifiedItem && HasItem(currIndex, itemID)) ||
-                        (!isModifiedItem && HasItem(currIndex, itemDataID))
+                        (isModifiedItem && HasExactItemID(currIndex, itemID)) ||
+                        (!isModifiedItem && HasExactItemID(currIndex, itemDataID))
                     )
                 )
                 {
@@ -463,7 +469,7 @@ namespace Inventory
 
                 if (remaining == 0)
                 {
-                    slot.itemID = Slot.NO_ITEM;
+                    slot.Clear();
                     break;
                 }
             }
@@ -483,7 +489,7 @@ namespace Inventory
             int n;
             for (int currIndex = NumSlots() - 1; currIndex >= 0; currIndex--)
             {
-                if (IsEmpty(currIndex) || !HasItem(currIndex, itemID))
+                if (IsEmpty(currIndex) || !HasExactItemID(currIndex, itemID))
                 {
                     continue;
                 }
@@ -510,7 +516,7 @@ namespace Inventory
 
                 if (remaining == 0)
                 {
-                    slot.itemID = Slot.NO_ITEM;
+                    slot.Clear();
                     break;
                 }
             }
