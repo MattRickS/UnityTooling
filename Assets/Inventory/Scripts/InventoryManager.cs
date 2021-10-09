@@ -46,12 +46,17 @@ namespace Inventory
         }
         public int NumInventories() { return inventories.Count; }
 
-        // Item Manipulation
+        // Read State
         public Dictionary<string, int> GetInventoryItems(string inventoryID)
         {
             Inventory inventory = GetInventoryByID(inventoryID);
             return inventory.Items();
         }
+        // public bool FindItem(string inventoryID, string itemID, out int index, int startIndex=0)
+        // {
+        //     Inventory inventory = GetInventoryByID(inventoryID);
+        //     return inventory.FindItem(itemID, out index, startIndex: startIndex);
+        // }
         public bool HasCapacity(string inventoryID, string itemID, int quantity = 1)
         {
             Inventory inventory = GetInventoryByID(inventoryID);
@@ -61,6 +66,23 @@ namespace Inventory
         {
             Inventory inventory = GetInventoryByID(inventoryID);
             return inventory.HasCapacity(itemQuantities);
+        }
+        // public bool HasItem(string inventoryID, string itemID, int quantity = 1)
+        // {
+        //     Inventory inventory = GetInventoryByID(inventoryID);
+        //     return inventory.HasItem(itemID, quantity);
+        // }
+        // public bool HasItems(string inventoryID, Dictionary<string, int> itemQuantities)
+        // {
+        //     Inventory inventory = GetInventoryByID(inventoryID);
+        //     return inventory.HasItems(itemQuantities);
+        // }
+
+        // Write State
+        public void ClearInventory(string inventoryID)
+        {
+            Inventory inventory = GetInventoryByID(inventoryID);
+            inventory.Clear();
         }
         public int AddItemToInventory(string inventoryID, string itemID, int quantity = 1)
         {
@@ -72,6 +94,56 @@ namespace Inventory
             Inventory inventory = GetInventoryByID(inventoryID);
             return inventory.AddItems(itemQuantities);
         }
+        // public Dictionary<string, int> TakeItem(string inventoryID, string itemID, int quantity = 1)
+        // {
+        //     Inventory inventory = GetInventoryByID(inventoryID);
+        //     return inventory.TakeItem(itemID, quantity);
+        // }
+        // public Dictionary<string, int> TakeItems(string inventoryID, Dictionary<string, int> itemQuantities)
+        // {
+        //     Inventory inventory = GetInventoryByID(inventoryID);
+        //     return inventory.TakeItems(itemQuantities);
+        // }
+        // public bool SwapItems(string leftInventoryID, Dictionary<string, int> leftItemQuantities, string rightInventoryID, Dictionary<string, int> rightItemQuantities = null)
+        // {
+        //     // TODO: Introduce locks
+        //     Inventory leftInventory = GetInventoryByID(leftInventoryID);
+        //     Inventory rightInventory = GetInventoryByID(rightInventoryID);
+
+        //     // Inventories must have the items to be swapped or we can immediately reject the request
+        //     if (!leftInventory.HasItems(leftItemQuantities) || (rightItemQuantities != null && rightInventory.HasItems(rightItemQuantities)))
+        //     {
+        //         return false;
+        //     }
+        //     // TODO: Capacity(stackable=N, nonstackable=M)
+        //     //   Stackables will need to know max sizes to know rollover
+        //     leftItemsCapacity = leftItemQuantities.Capacity();
+        //     rightSpareCapacity = CapacityFromInventory(rightInventory);
+        //     if (rightItemQuantities == null)
+        //     {
+        //         if (!rightSpareCapacity.Fits(leftItemsCapacity))
+        //             return false;
+        //         leftInventory.TakeItems(leftItemQuantities);
+        //         rightInventory.AddItems(leftItemQuantities);
+        //     }
+        //     else
+        //     {
+        //         rightItemsCapacity = rightItemQuantities.Capacity();
+        //         if (!(rightSpareCapacity + rightItemsCapacity).Fits(leftItemsCapacity))
+        //             return false;
+        //         leftSpareCapacity = leftInventory.SpareCapacity();
+        //         if (!(leftSpareCapacity + leftItemsCapacity).Fits(rightItemsCapacity))
+        //             return false;
+        //         leftInventory.TakeItems(leftItemQuantities);
+        //         rightInventory.TakeItems(rightItemQuantities);
+
+        //         leftInventory.AddItems(rightItemQuantities);
+        //         rightInventory.AddItems(leftItemQuantities);
+        //     }
+        //     return true;
+        // }
+
+
         // Serialization
         public void OnBeforeSerialize() { }
         public void OnAfterDeserialize()
