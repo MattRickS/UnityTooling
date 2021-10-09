@@ -135,4 +135,23 @@ public class InventoryManagerTest : ItemTestHarness
         Assert.That(result, Is.EqualTo(found));
         Assert.That(index, Is.EqualTo(expectedIndex));
     }
+
+    [TestCase(shieldItemID, 1, true)]
+    [TestCase(healthPotionID, 13, true)]
+    [TestCase(healthPotionID, 14, false)]
+    [TestCase(swordItemID, 2, true)]
+    [TestCase(manaPotionID, 1, false)]
+    public void HasItem_Default_MatchesResult(string itemID, int quantity, bool expected)
+    {
+        InventoryManager manager = new InventoryManager(sharedItemManager);
+        string inventoryID = manager.CreateInventory(6);
+        manager.AddItemToInventory(inventoryID, shieldItemID);
+        manager.AddItemToInventory(inventoryID, modifiedSwordItemID);
+        manager.AddItemToInventory(inventoryID, healthPotionID, quantity: 10);
+        manager.AddItemToInventory(inventoryID, swordItemID);
+        manager.AddItemToInventory(inventoryID, healthPotionID, quantity: 3);
+
+        bool result = manager.HasItem(inventoryID, itemID, quantity);
+        Assert.That(result, Is.EqualTo(expected));
+    }
 }

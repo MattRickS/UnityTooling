@@ -179,6 +179,19 @@ namespace Inventory
             index = -1;
             return false;
         }
+        public bool HasItem(string itemID, int quantity = 1)
+        {
+            foreach (Slot slot in slots)
+            {
+                if (slot.HasExactItemID(itemID))
+                {
+                    quantity -= slot.quantity;
+                    if (quantity <= 0)
+                        return true;
+                }
+            }
+            return false;
+        }
 
         // Statistics
         public int SlotStatistic(int index, Statistic stat)
