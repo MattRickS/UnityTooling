@@ -96,16 +96,16 @@ namespace Inventory
             Inventory inventory = GetInventoryByID(inventoryID);
             return inventory.AddItems(itemQuantities);
         }
-        public int TakeItem(string inventoryID, Dictionary<string, int> itemQuantities, string itemID, int quantity = 1)
+        public int TakeItem(string inventoryID, Dictionary<string, int> aggregateItemQuantities, string itemID, int quantity = 1)
         {
             Inventory inventory = GetInventoryByID(inventoryID);
-            return inventory.TakeItem(itemID, quantity, itemQuantities);
+            return inventory.TakeItem(itemID, quantity, aggregateItemQuantities);
         }
-        // public Dictionary<string, int> TakeItems(string inventoryID, Dictionary<string, int> itemQuantities)
-        // {
-        //     Inventory inventory = GetInventoryByID(inventoryID);
-        //     return inventory.TakeItems(itemQuantities);
-        // }
+        public Dictionary<string, int> TakeItems(string inventoryID, Dictionary<string, int> itemsToTake, Dictionary<string, int> aggregateItemQuantities)
+        {
+            Inventory inventory = GetInventoryByID(inventoryID);
+            return inventory.TakeItems(itemsToTake, aggregateItemQuantities);
+        }
         // public bool SwapItems(string leftInventoryID, Dictionary<string, int> leftItemQuantities, string rightInventoryID, Dictionary<string, int> rightItemQuantities = null)
         // {
         //     // TODO: Introduce locks

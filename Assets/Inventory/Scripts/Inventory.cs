@@ -644,5 +644,97 @@ namespace Inventory
 
             return remaining;
         }
+        /// <summary>Takes a bundle of items from the inventory, prioritising modified
+        /// and smaller stacks. Taken items are added to the aggregateItemQuantities.
+        /// Any quantities of items that could not be taken are returned.</summary>
+        public Dictionary<string, int> TakeItems(Dictionary<string, int> itemsToTake, Dictionary<string, int> aggregateItemQuantities)
+        {
+            Dictionary<string, int> remainingItems = new Dictionary<string, int>(itemsToTake);
+            if (itemsToTake.Count == 0)
+                return remainingItems;
+
+            void AddToQuantities(string exactItemID, int count)
+            {
+                int current;
+                aggregateItemQuantities.TryGetValue(exactItemID, out current);
+                aggregateItemQuantities[exactItemID] = current + count;
+
+                current = remainingItems[exactItemID];
+                current -= count;
+                if (current > 0)
+                    remainingItems[exactItemID] = current;
+                else
+                    remainingItems.Remove(exactItemID);
+            }
+
+            // Slots with modified items first, then ordered by quantity
+            List<Slot> orderedSlots = slots
+                .Where(s => !s.IsEmpty())
+                .OrderBy(s => (s.instanceIDs.Count > 0 ? -s.instanceIDs.Count : s.quantity))
+                .ToList();
+
+            int remainingValue;
+            string modifiedItemID;
+            foreach (Slot slot in orderedSlots)
+            {
+                // Consume modified items first
+                for (int i = slot.instanceIDs.Count - 1; i >= 0; i--)
+                {
+                    modifiedItemID = slot.instanceIDs[i];
+                    if (remainingItems.TryGetValue(modifiedItemID, out remainingValue))
+                    {
+                        slot.instanceIDs.RemoveAt(i);
+                        slot.quantity -= 1;
+                        AddToQuantities(modifiedItemID, 1);
+                    }
+                }
+
+                // Consume generic/modified items if the slot contains a requested generic
+                if (slot.quantity > 0 && remainingItems.TryGetValue(slot.itemID, out remainingValue))
+                {
+                    if (remainingValue >= slot.quantity)
+                    {
+                        // Add the explicit modified item IDs to the dict
+                        slot.quantity -= slot.instanceIDs.Count;
+                        foreach (string modItemID in slot.instanceIDs)
+                            AddToQuantities(modItemID, 1);
+
+                        // Add the remainder as regular item IDs
+                        if (slot.quantity > 0)
+                            AddToQuantities(slot.itemID, slot.quantity);
+
+                        // Reduce to 0 quantity so it will be cleared later
+                        slot.quantity = 0;
+                    }
+                    else
+                    {
+                        int toTake = Math.Min(slot.quantity, remainingValue);
+                        slot.quantity -= toTake;
+
+                        // Add the explicit modified item IDs to the dict
+                        int numInstances = Math.Min(slot.instanceIDs.Count, toTake);
+                        for (int i = slot.instanceIDs.Count - 1; i > slot.instanceIDs.Count - numInstances - 1; i--)
+                        {
+                            AddToQuantities(slot.instanceIDs[i], 1);
+                            slot.instanceIDs.RemoveAt(i);
+                        }
+
+                        // Add the remainder as regular item IDs
+                        toTake -= numInstances;
+                        if (toTake > 0)
+                            AddToQuantities(slot.itemID, toTake);
+                    }
+                }
+
+                if (slot.quantity == 0)
+                    slot.Clear();
+
+                // Stop once everything's collected
+                if (remainingItems.Count == 0)
+                    break;
+            }
+
+            return remainingItems;
+        }
     }
 }

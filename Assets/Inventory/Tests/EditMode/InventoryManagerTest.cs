@@ -307,4 +307,39 @@ public class InventoryManagerTest : ItemTestHarness
         Assert.That(notTaken, Is.EqualTo(3));
         Assert.That(itemQuantities[healthPotionID], Is.EqualTo(13));
     }
+
+    [Test]
+    public void TakeItems_Mixed_Success()
+    {
+        InventoryManager manager = new InventoryManager(sharedItemManager);
+        string inventoryID = manager.CreateInventory(10);
+        manager.AddItemToInventory(inventoryID, shieldItemID);
+        manager.AddItemToInventory(inventoryID, modifiedSwordItemID);
+        manager.AddItemToInventory(inventoryID, healthPotionID, quantity: 10);
+        manager.AddItemToInventory(inventoryID, swordItemID, 3);
+        manager.AddItemToInventory(inventoryID, healthPotionID, quantity: 3);
+
+        Dictionary<string, int> aggregateItemQuantities = new Dictionary<string, int>();
+        Dictionary<string, int> itemsToTake = new Dictionary<string, int>() {
+            {shieldItemID, 2},
+            {swordItemID, 2},
+            {modifiedSwordItemID, 1},
+            {healthPotionID, 11},
+        };
+
+        Dictionary<string, int> expectedAggregate = new Dictionary<string, int>() {
+            {shieldItemID, 1},
+            {swordItemID, 2},
+            {modifiedSwordItemID, 1},
+            {healthPotionID, 11},
+        };
+        Dictionary<string, int> expectedNotTaken = new Dictionary<string, int>() {
+            {shieldItemID, 1},
+        };
+
+        // TODO: healthPotion 10 taken, returning 1 untaken
+        Dictionary<string, int> notTaken = manager.TakeItems(inventoryID, itemsToTake, aggregateItemQuantities);
+        Assert.That(aggregateItemQuantities, Is.EqualTo(expectedAggregate));
+        Assert.That(notTaken, Is.EqualTo(expectedNotTaken));
+    }
 }
