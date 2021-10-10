@@ -541,67 +541,108 @@ namespace Inventory
             }
             return quantity - remaining;
         }
-        /*
-        Removes the requested number of item and returns them as a list of IDs.
-        IDs may or may not be modified, and duplicate IDs are returned for
-        multiple non-modified items.
-        */
-        public List<string> TakeItems(string itemID, int quantity)
+        /// <summary>Takes the requested quantity of the given item out of the
+        /// inventory and adds it to the given item quantities. Returns the
+        /// number of items not taken. For stackable items, smaller stacks are
+        /// consumed first.
+        /// If requesting a non modified item, modified items of the same type
+        /// may be taken.</summary>
+        public int TakeItem(string itemID, int quantity, Dictionary<string, int> itemQuantities)
         {
-            List<string> takenIDs = new List<string>();
+            if (quantity <= 0)
+                return 0;
+
+            // Find all slots containing the item first so we can remove from smallest
+            // stacks first
+            List<Slot> matchingSlots = new List<Slot>();
+            foreach (Slot slot in slots)
+            {
+                if (slot.HasExactItemID(itemID))
+                    matchingSlots.Add(slot);
+            }
+
+            if (matchingSlots.Count == 0)
+                return quantity;
 
             int remaining = quantity;
-            Slot slot;
-            int n;
-            for (int currIndex = NumSlots() - 1; currIndex >= 0; currIndex--)
-            {
-                if (IsEmpty(currIndex) || !HasExactItemID(currIndex, itemID))
-                {
-                    continue;
-                }
-                n = Math.Min(remaining, StackSize(currIndex));
-                slot = slots[currIndex];
-                slot.itemID = itemID;
 
-                for (int i = 0; i < n; i++)
+            void AddToQuantities(string exactItemID, int count)
+            {
+                int current;
+                itemQuantities.TryGetValue(exactItemID, out current);
+                itemQuantities[exactItemID] = current + count;
+                remaining -= count;
+            }
+
+            int OrderSlot(Slot x, Slot y)
+            {
+                // Modified > Static
+                int result = x.instanceIDs.Count.CompareTo(y.instanceIDs.Count);
+                if (result != 0) return -result;
+                // Smaller stacks > Larger stacks
+                return x.quantity.CompareTo(y.quantity);
+            }
+
+            // Order from smallest stack to highest
+            // Alternative: (x, y) => x.quantity.CompareTo(y.quantity)
+            matchingSlots.Sort(OrderSlot);
+            foreach (Slot slot in matchingSlots)
+            {
+                if (slot.itemID == itemID)
                 {
-                    // Modified instances are assumed to be top of the stack
-                    if (slot.instanceIDs.Count > 0)
+                    if (remaining >= slot.quantity)
                     {
-                        takenIDs.Add(slot.instanceIDs[slot.instanceIDs.Count - 1]);
-                        slot.instanceIDs.RemoveAt(slot.instanceIDs.Count - 1);
+                        // Add the explicit modified item IDs to the dict
+                        slot.quantity -= slot.instanceIDs.Count;
+                        foreach (string modifiedItemID in slot.instanceIDs)
+                            AddToQuantities(modifiedItemID, 1);
+
+                        // Add the remainder as regular item IDs
+                        if (slot.quantity > 0)
+                            AddToQuantities(itemID, slot.quantity);
+
+                        slot.Clear();
                     }
                     else
                     {
-                        takenIDs.Add(slot.itemID);
+                        int toTake = Math.Min(slot.quantity, remaining);
+                        slot.quantity -= toTake;
+
+                        // Add the explicit modified item IDs to the dict
+                        int numInstances = Math.Min(slot.instanceIDs.Count, toTake);
+                        for (int i = slot.instanceIDs.Count - 1; i > slot.instanceIDs.Count - numInstances - 1; i--)
+                        {
+                            AddToQuantities(slot.instanceIDs[i], 1);
+                            slot.instanceIDs.RemoveAt(i);
+                        }
+
+                        // Add the remainder as regular item IDs
+                        toTake -= numInstances;
+                        if (toTake > 0)
+                            AddToQuantities(itemID, toTake);
+                    }
+                }
+                // Consume only from the instance IDs
+                else if (slot.instanceIDs.Contains(itemID))
+                {
+                    for (int i = slot.instanceIDs.Count - 1; i >= 0; i--)
+                    {
+                        if (slot.instanceIDs[i] != itemID)
+                            continue;
+
+                        slot.quantity -= 1;
+                        AddToQuantities(slot.instanceIDs[i], 1);
+                        slot.instanceIDs.RemoveAt(i);
+                        if (remaining == 0)
+                            break;
                     }
                 }
 
-                slot.quantity -= n;
-                remaining -= n;
-
                 if (remaining == 0)
-                {
-                    slot.Clear();
                     break;
-                }
             }
-            return takenIDs;
-        }
-        /*
-        Removes the requested item and outputs the itemID which may be modified.
-        Returns bool for whether the item was found or not.
-        */
-        public bool TakeItem(string itemID, out string takenItemID)
-        {
-            List<string> taken = TakeItems(itemID, 1);
-            if (taken.Count > 0)
-            {
-                takenItemID = taken[0];
-                return true;
-            }
-            takenItemID = "";
-            return false;
+
+            return remaining;
         }
     }
 }

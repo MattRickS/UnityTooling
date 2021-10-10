@@ -96,11 +96,11 @@ namespace Inventory
             Inventory inventory = GetInventoryByID(inventoryID);
             return inventory.AddItems(itemQuantities);
         }
-        // public Dictionary<string, int> TakeItem(string inventoryID, string itemID, int quantity = 1)
-        // {
-        //     Inventory inventory = GetInventoryByID(inventoryID);
-        //     return inventory.TakeItem(itemID, quantity);
-        // }
+        public int TakeItem(string inventoryID, Dictionary<string, int> itemQuantities, string itemID, int quantity = 1)
+        {
+            Inventory inventory = GetInventoryByID(inventoryID);
+            return inventory.TakeItem(itemID, quantity, itemQuantities);
+        }
         // public Dictionary<string, int> TakeItems(string inventoryID, Dictionary<string, int> itemQuantities)
         // {
         //     Inventory inventory = GetInventoryByID(inventoryID);
