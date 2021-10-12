@@ -23,3 +23,4 @@ MonoBehaviour:
       Value: 10
     - Key: 4
       Value: 20
+  texture: {fileID: 2800000, guid: 6457c1a1198c9c94e9a28db6aaa3d1f0, type: 3}

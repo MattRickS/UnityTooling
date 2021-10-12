@@ -36,6 +36,7 @@ namespace Inventory
         [Min(1)]
         [SerializeField] private int maxStackSize = 1;
         [SerializeField] private bool isConsumable = false;
+        [SerializeField] private Sprite sprite;
         [SerializeField] private SerializableDictionary<Statistic, int> statistics = new SerializableDictionary<Statistic, int>();
         // TODO:
         // Sprite - Icon to display
@@ -49,6 +50,7 @@ namespace Inventory
         public string Description { get { return description; } }
         public int MaxStackSize { get { return maxStackSize; } }
         public bool IsConsumable { get { return isConsumable; } }
+        public Sprite Sprite { get { return sprite; } }
         public IEnumerator<KeyValuePair<Statistic, int>> Statistics()
         {
             foreach (var pair in statistics)
