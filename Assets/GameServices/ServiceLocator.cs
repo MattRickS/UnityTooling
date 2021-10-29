@@ -6,10 +6,14 @@ namespace GameServices
 
     public class ServiceLocator
     {
-        private ServiceLocator() { }
         private readonly Dictionary<string, IGameService> services = new Dictionary<string, IGameService>();
 
         public static ServiceLocator Instance { get; private set; }
+
+        protected ServiceLocator()
+        {
+            Instance ??= this;
+        }
 
         public static void Initialize()
         {

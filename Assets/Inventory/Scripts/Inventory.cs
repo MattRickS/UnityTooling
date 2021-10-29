@@ -19,13 +19,13 @@ namespace Inventory
         // For now, dependency inject the manager and InventoryManager serialisation
         // ensures all inventories use a shared instance. Should look at making this
         // private and see if there are better serialization options.
-        private ItemManager itemManager;
+        private ItemDatabase itemManager;
         [SerializeField] private List<Slot> slots;
 
         private ItemData GetItemData(int index) { return itemManager.GetItemData(slots[index].itemID); }
         private ItemData GetItemData(string itemID) { return itemManager.GetItemData(itemID); }
 
-        public Inventory(ItemManager itemManager, uint size)
+        public Inventory(ItemDatabase itemManager, uint size)
         {
             this.itemManager = itemManager;
             slots = new List<Slot>();
@@ -34,7 +34,7 @@ namespace Inventory
                 slots.Add(new Slot());
             }
         }
-        public void SetItemManager(ItemManager itemManager) { this.itemManager = itemManager; }
+        public void SetItemManager(ItemDatabase itemManager) { this.itemManager = itemManager; }
 
         public string Id() { return inventoryID; }
         public int NumSlots() { return slots.Count; }

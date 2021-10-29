@@ -9,8 +9,7 @@ public class ItemTestHarness
     public ItemData item_shield;
     public ItemData item_sword;
     public ItemData item_healthPotion;
-    public Catalog catalog;
-    public ItemManager sharedItemManager;
+    public ItemDatabase sharedItemManager;
     public const string shieldItemID = "Armour.shield";
     public const string swordItemID = "Weapon.sword";
     public const string healthPotionID = "Miscellaneous.healthPotion";
@@ -76,10 +75,7 @@ public class ItemTestHarness
         },
         maxStackSize: 10, isConsumable: true);
 
-        catalog = Catalog.Create(
-            new List<ItemData>() { item_shield, item_sword, item_healthPotion }
-        );
-        sharedItemManager = new ItemManager(catalog);
+        sharedItemManager = new ItemDatabase();
         sharedItemManager.CreateModifiedItemID(swordItemID, modifiedSwordItemID);
         sharedItemManager.SetItemStatisticDeltaValue(modifiedSwordItemID, Statistic.Value, -10);
     }
@@ -89,6 +85,5 @@ public class ItemTestHarness
     {
         Object.DestroyImmediate(item_shield);
         Object.DestroyImmediate(item_sword);
-        Object.DestroyImmediate(catalog);
     }
 }

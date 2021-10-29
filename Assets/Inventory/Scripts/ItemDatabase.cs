@@ -1,24 +1,43 @@
 using System;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEditor;
 
 
 namespace Inventory
 {
-    /// <summary>Interface for managing items. ItemData and Catalogs are static data
-    /// that can be freely referenced and shared. ModifiedItems are stateful, so are
-    /// tracked by the ItemManager and referenced via IDs. This ensures the
+    // TODO: make a virtual base class
+    /// <summary>Interface for managing items. ItemData is static data that can
+    /// be freely referenced and shared. ModifiedItems are stateful, so are
+    /// tracked by the ItemDatabase and referenced via IDs. This ensures the
     /// (de)serialization is centralised to avoid data becoming duplicated.</summary>
     [Serializable]
-    public class ItemManager : ISerializationCallbackReceiver
+    public class ItemDatabase : ISerializationCallbackReceiver
     {
-        public Catalog catalog;
+        private Dictionary<string, ItemData> staticItems = null;
         public List<ModifiedItem> modifiedItems = new List<ModifiedItem>();
 
         private Dictionary<string, ModifiedItem> modifiedItemMapping = new Dictionary<string, ModifiedItem>();
 
-        public ItemManager() { }
-        public ItemManager(Catalog catalog) { this.catalog = catalog; }
+        private void LoadItems()
+        {
+            Debug.Log("Loading items");
+            string[] itemGUIDs = AssetDatabase.FindAssets("t:" + typeof(ItemData).FullName);
+            ItemData itemData;
+            foreach (string itemGUID in itemGUIDs)
+            {
+                itemData = (ItemData)AssetDatabase.LoadAssetAtPath(itemGUID, typeof(ItemData));
+                staticItems[itemData.Id()] = itemData;
+            }
+        }
+        private Dictionary<string, ItemData> StaticItems
+        {
+            get
+            {
+                if (staticItems == null) LoadItems();
+                return staticItems;
+            }
+        }
 
         private ModifiedItem CreateModifiedItem(string itemID, string newItemID = null)
         {
@@ -39,11 +58,23 @@ namespace Inventory
             return modifiedItem;
         }
 
+        private ItemData FindItemData(string itemID)
+        {
+            if (string.IsNullOrEmpty(itemID)) return null;
+
+            ItemData data;
+            if (StaticItems.TryGetValue(itemID, out data))
+            {
+                return data;
+            }
+            return null;
+        }
+        public int NumStaticItems() { return StaticItems.Count; }
+        public bool IsStaticItemID(string itemID) { return StaticItems.ContainsKey(itemID); }
+
         public int NumModifiedItems() { return modifiedItems.Count; }
-        public int NumStaticItems() { return catalog.NumItems(); }
         public bool IsValidID(string itemID) { return IsStaticItemID(itemID) || IsModifiedItemID(itemID); }
         public bool IsModifiedItemID(string itemID) { return !string.IsNullOrEmpty(itemID) && modifiedItemMapping.ContainsKey(itemID); }
-        public bool IsStaticItemID(string itemID) { return catalog.IsValidID(itemID); }
 
         // Item Data
         /// <summary>Retrieves the <see cref="ItemData"/> for a given ID, which may be
@@ -56,7 +87,7 @@ namespace Inventory
             {
                 itemID = modifiedItem.itemID;
             }
-            return catalog.GetItemData(itemID);
+            return FindItemData(itemID);
         }
         /// <summary>Convenience method for the maxStackSize of an item</summary>
         public int MaxStackSize(string itemID) { return GetItemData(itemID).MaxStackSize; }

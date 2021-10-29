@@ -18,14 +18,14 @@ namespace Inventory
     [Serializable]
     public class InventoryManager : ISerializationCallbackReceiver
     {
-        [SerializeField] private ItemManager itemManager;
+        [SerializeField] private ItemDatabase itemManager;
         [SerializeField] private List<Inventory> inventories = new List<Inventory>();
         private Dictionary<string, Inventory> inventoryMapping = new Dictionary<string, Inventory>();
 
         public InventoryManager() { }
-        public InventoryManager(ItemManager itemManager) { this.itemManager = itemManager; }
+        public InventoryManager(ItemDatabase itemManager) { this.itemManager = itemManager; }
 
-        public ItemManager ItemManager { get { return itemManager; } }
+        public ItemDatabase ItemManager { get { return itemManager; } }
 
         private Inventory GetInventoryByID(string inventoryID)
         {

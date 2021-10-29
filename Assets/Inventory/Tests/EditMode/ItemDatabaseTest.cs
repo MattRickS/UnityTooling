@@ -10,7 +10,7 @@ public class ItemManagerTest : ItemTestHarness
     public void CreateModifiedItemID_ValidID_Success(string name)
     {
         // New instance so we they don't overlap/clash
-        ItemManager itemManager = new ItemManager(catalog);
+        ItemDatabase itemManager = new ItemDatabase();
         string firstItemID = itemManager.CreateModifiedItemID(name);
         Assert.That(firstItemID, Does.StartWith($"{name}."));
         Assert.That(itemManager.IsValidID(firstItemID));
@@ -30,7 +30,7 @@ public class ItemManagerTest : ItemTestHarness
     public void DestroyModifiedItemID_ValidID_True()
     {
         // New instance so we they don't overlap/clash
-        ItemManager itemManager = new ItemManager(catalog);
+        ItemDatabase itemManager = new ItemDatabase();
         string itemID = itemManager.CreateModifiedItemID(shieldItemID);
         Assert.That(itemManager.NumModifiedItems(), Is.EqualTo(1));
         Assert.That(itemManager.IsModifiedItemID(itemID), Is.True);
@@ -91,7 +91,7 @@ public class ItemManagerTest : ItemTestHarness
     [Test]
     public void NumModifiedItems()
     {
-        ItemManager manager = new ItemManager(catalog);
+        ItemDatabase manager = new ItemDatabase();
         Assert.That(manager.NumModifiedItems(), Is.EqualTo(0));
         manager.CreateModifiedItemID(swordItemID);
         Assert.That(manager.NumModifiedItems(), Is.EqualTo(1));
@@ -103,7 +103,7 @@ public class ItemManagerTest : ItemTestHarness
     public void NumStaticIDs()
     {
         // Modified items shouldn't increment the static item count
-        ItemManager manager = new ItemManager(catalog);
+        ItemDatabase manager = new ItemDatabase();
         Assert.That(manager.NumStaticItems(), Is.EqualTo(3));
         manager.CreateModifiedItemID(swordItemID);
         Assert.That(manager.NumStaticItems(), Is.EqualTo(3));
@@ -181,7 +181,7 @@ public class ItemManagerTest : ItemTestHarness
     [Test]
     public void SetItemStatisticDeltaValue_ModifiedID_UpdatedExistingItem()
     {
-        ItemManager manager = new ItemManager(catalog);
+        ItemDatabase manager = new ItemDatabase();
         string knownID = manager.CreateModifiedItemID(swordItemID);
 
         // No new item created for existing modified item
@@ -194,7 +194,7 @@ public class ItemManagerTest : ItemTestHarness
     [Test]
     public void SetItemStatisticDeltaValue_StaticID_NewModifiedItem()
     {
-        ItemManager manager = new ItemManager(catalog);
+        ItemDatabase manager = new ItemDatabase();
 
         // New item created for static item ID
         string itemID = manager.SetItemStatisticDeltaValue(shieldItemID, Statistic.Weight, 50);
@@ -206,7 +206,7 @@ public class ItemManagerTest : ItemTestHarness
     [TestCaseSource("invalidItemIDProvider")]
     public void SetItemStatisticDeltaValue_InvalidID_Throws(string itemID)
     {
-        ItemManager manager = new ItemManager(catalog);
+        ItemDatabase manager = new ItemDatabase();
         Assert.That(
             () => { manager.SetItemStatisticDeltaValue(itemID, Statistic.Weight, 50); },
             Throws.TypeOf<KeyNotFoundException>()
@@ -216,7 +216,7 @@ public class ItemManagerTest : ItemTestHarness
     [Test]
     public void ModifyItemStatisticDeltaValue_ModifiedID_ModifiesValue()
     {
-        ItemManager manager = new ItemManager(catalog);
+        ItemDatabase manager = new ItemDatabase();
         string itemID = manager.CreateModifiedItemID(swordItemID);
         manager.SetItemStatisticDeltaValue(itemID, Statistic.Value, -10);
 
@@ -232,7 +232,7 @@ public class ItemManagerTest : ItemTestHarness
     [TestCaseSource("validStaticItemIDProvider")]
     public void ModifyItemStatisticDeltaValue_StaticID_Throws(string itemID)
     {
-        ItemManager manager = new ItemManager(catalog);
+        ItemDatabase manager = new ItemDatabase();
         Assert.That(
             () => { manager.ModifyItemStatisticDeltaValue(itemID, Statistic.Weight, 50); },
             Throws.TypeOf<KeyNotFoundException>()
@@ -242,7 +242,7 @@ public class ItemManagerTest : ItemTestHarness
     [TestCaseSource("invalidItemIDProvider")]
     public void ModifyItemStatisticDeltaValue_InvalidID_Throws(string itemID)
     {
-        ItemManager manager = new ItemManager(catalog);
+        ItemDatabase manager = new ItemDatabase();
         Assert.That(
             () => { manager.ModifyItemStatisticDeltaValue(itemID, Statistic.Weight, 50); },
             Throws.TypeOf<KeyNotFoundException>()
